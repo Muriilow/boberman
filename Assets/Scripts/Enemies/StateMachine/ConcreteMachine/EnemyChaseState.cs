@@ -4,30 +4,32 @@ using UnityEngine;
 
 public class EnemyChaseState : EnemyState
 {
-    private Transform _playerTransform;
-    private float _movementSpeed = 1.75f;
-    public EnemyChaseState(Enemy enemy, EnemyStateMachine enemyStateMachine) : base(enemy, enemyStateMachine) 
-    {
-        _playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
-    }
+    
 
+    public EnemyChaseState(Enemy enemy, EnemyStateMachine enemyStateMachine) : base(enemy, enemyStateMachine) { }
     public override void EnterState() 
     {
         base.EnterState();
-
-        Debug.Log("Hello from enter state");
+        enemy.EnemyChaseBaseInstance.DoEnterLogic();
     }
-    public override void ExitState() { }
+    public override void ExitState() 
+    {
+        base.ExitState();
+        enemy.EnemyChaseBaseInstance.DoExitLogic();
+    }
     public override void FrameUpdate() 
     {
         base.FrameUpdate();
-
-        Vector2 moveDirection = (_playerTransform.position - enemy.transform.position).normalized;
-        enemy.MoveEnemy(moveDirection * _movementSpeed);
-
-        if (enemy.IsWithinStrikingDistance)
-            enemy.StateMachine.ChangeState(enemy.AttackState);
+        enemy.EnemyChaseBaseInstance.DoFrameUpdateLogic();
     }
-    public override void PhysicsUpdate() { }
-    public override void AnimationTriggerEvent(Enemy.AnimationtriggerType triggerType) { }
+    public override void PhysicsUpdate() 
+    {
+        base.PhysicsUpdate();
+        enemy.EnemyChaseBaseInstance.DoPhysicsUpdateLogic();
+    }
+    public override void AnimationTriggerEvent(Enemy.AnimationtriggerType triggerType) 
+    {
+        base.AnimationTriggerEvent(triggerType);
+        enemy.EnemyChaseBaseInstance.DoAnimationTriggerEventLogic(triggerType);
+    }
 }
