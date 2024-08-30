@@ -10,7 +10,7 @@ public class Enemy : MonoBehaviour, IDamageable, IEnemyMoveable, ITriggerCheckab
     public bool IsFacingRight { get; set; } = true;
 
     /*----State Machine Variables----*/
-    public EnemyStateMachine StateMachine { get; set; }
+    public StateMachine<EnemyState> StateMachine { get; set; }
     public EnemyAttackState AttackState { get; set; }
     public EnemyIdleState IdleState { get; set; }
     public EnemyChaseState ChaseState { get; set; }
@@ -36,7 +36,7 @@ public class Enemy : MonoBehaviour, IDamageable, IEnemyMoveable, ITriggerCheckab
         EnemyChaseBaseInstance = Instantiate(EnemyChaseBase);
         EnemyAttackBaseInstance = Instantiate(EnemyAttackBase);
 
-        StateMachine = new EnemyStateMachine();
+        StateMachine = new StateMachine<EnemyState>();
 
         IdleState = new EnemyIdleState(this, StateMachine);
         ChaseState = new EnemyChaseState(this, StateMachine);
@@ -56,12 +56,12 @@ public class Enemy : MonoBehaviour, IDamageable, IEnemyMoveable, ITriggerCheckab
 
     void Update()
     {
-        StateMachine.CurrentEnemyState.FrameUpdate();
+        StateMachine.CurrentState.FrameUpdate();
     }
 
     void FixedUpdate()
     {
-        StateMachine.CurrentEnemyState.PhysicsUpdate();
+        StateMachine.CurrentState.PhysicsUpdate();
     }
 
     #region Trigger
@@ -119,7 +119,7 @@ public class Enemy : MonoBehaviour, IDamageable, IEnemyMoveable, ITriggerCheckab
 
     private void AnimationTriggerEvent(AnimationtriggerType triggerType)
     {
-        StateMachine.CurrentEnemyState.AnimationTriggerEvent(triggerType);
+        StateMachine.CurrentState.AnimationTriggerEvent(triggerType);
     }
     public enum AnimationtriggerType
     {

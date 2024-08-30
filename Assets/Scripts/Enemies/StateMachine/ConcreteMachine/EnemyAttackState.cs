@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class EnemyAttackState : EnemyState
 {
-    public EnemyAttackState(Enemy enemy, EnemyStateMachine enemyStateMachine) : base(enemy, enemyStateMachine) { }
+    public EnemyAttackState(Enemy enemy, StateMachine<EnemyState> enemyStateMachine) : base(enemy, enemyStateMachine) { }
     public override void EnterState() 
     {
         base.EnterState();

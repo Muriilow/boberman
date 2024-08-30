@@ -214,7 +214,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <MaxHealth>k__BackingField: 10
   EnemyIdleBase: {fileID: 11400000, guid: 5192fee278e3f4b42b18784fbfc625a3, type: 2}
-  EnemyChaseBase: {fileID: 11400000, guid: b9224d19ded8d0c4b8baa8b46236549b, type: 2}
+  EnemyChaseBase: {fileID: 11400000, guid: 2c7e22cddb9a03e449086eb005a68d63, type: 2}
   EnemyAttackBase: {fileID: 11400000, guid: d3d7ae838dcc1bc45bd7c53bf0b59081, type: 2}
 --- !u!50 &2403826628728047885
 Rigidbody2D:

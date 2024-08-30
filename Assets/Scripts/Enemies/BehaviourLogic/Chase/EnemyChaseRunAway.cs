@@ -5,7 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Chase-Run Away", menuName = "Enemy Logic/Chase Logic/Run Away")]
 public class EnemyChaseRunAway : EnemyChaseSOBase
 {
-    [SerializeField] private float _runAwaySpeed = 1.5f;
+    [SerializeField] private float _runAwaySpeed = 2.5f;
     public override void DoAnimationTriggerEventLogic(Enemy.AnimationtriggerType triggerType)
     {
         base.DoAnimationTriggerEventLogic(triggerType);
@@ -25,7 +25,11 @@ public class EnemyChaseRunAway : EnemyChaseSOBase
     {
         base.DoFrameUpdateLogic();
 
-        if(!enemy.IsAggroed)
+        if (playerTransform == null)
+            return;
+
+
+        if (!enemy.IsAggroed)
             enemy.StateMachine.ChangeState(enemy.IdleState);
         Vector3 runDir = -(playerTransform.position - transform.position).normalized;
 

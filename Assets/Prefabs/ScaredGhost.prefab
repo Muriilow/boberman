@@ -50,7 +50,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <MaxHealth>k__BackingField: 10
   EnemyIdleBase: {fileID: 11400000, guid: 4a4ed6d4f5aaeb6458fa48495185be33, type: 2}
-  EnemyChaseBase: {fileID: 11400000, guid: c3c664505c45d7540a000163aaff117a, type: 2}
+  EnemyChaseBase: {fileID: 11400000, guid: 8719b59dfc1b54d448c039989e1c856e, type: 2}
   EnemyAttackBase: {fileID: 11400000, guid: d3d7ae838dcc1bc45bd7c53bf0b59081, type: 2}
 --- !u!50 &679090089017812848
 Rigidbody2D:

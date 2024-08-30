@@ -2,12 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EnemyState
+public class EnemyState : IState
 {
     protected Enemy enemy;
-    protected EnemyStateMachine enemyStateMachine;
+    protected StateMachine<EnemyState> enemyStateMachine;
 
-    public EnemyState(Enemy enemy, EnemyStateMachine enemyStateMachine)
+    public EnemyState(Enemy enemy, StateMachine<EnemyState> enemyStateMachine)
     {
         this.enemy = enemy;
         this.enemyStateMachine = enemyStateMachine;

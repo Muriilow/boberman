@@ -56,18 +56,13 @@ public class PlayerMovement : NetworkBehaviour
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private Rigidbody2D rigidBody;
-    [SerializeField] private PlayerInputSystem playerInput;
-    [SerializeField] private Vector2 direction;
-    private Vector3 originalPosition, targetPosition;
-    private bool isMoving;
-    [SerializeField] TileMapRef timeMapSO;
-    [SerializeField] private Tilemap groundTilemap;
-    [SerializeField] private Tilemap collisionTilemap;
+    [SerializeField] public PlayerInputSystem playerInput;
+    [SerializeField] public Vector2 direction;
 
     [Header("Network")]
     [SerializeField] private AuthorityMode authorityMode;
 
-    private NetworkTimer networkTimer;
+    public NetworkTimer networkTimer;
     private const float SERVERTICKRATE = 60f; //60 fps
     private const int BUFFERSIZE = 1024;
 
@@ -85,7 +80,7 @@ public class PlayerMovement : NetworkBehaviour
     [SerializeField] private double reconciliationThreshold = 10f;
     [SerializeField] private float reconciliationCooldownTime = 1f;
 
-    private CountdownTimer reconciliationCooldown;
+    public CountdownTimer reconciliationCooldown;
 
 
     void Awake()
@@ -100,24 +95,19 @@ public class PlayerMovement : NetworkBehaviour
         serverInputQueue = new Queue<InputPayload>();
 
         reconciliationCooldown = new CountdownTimer(reconciliationCooldownTime);
-        isMoving = false;
+
     }
 
     private void Start()
     {
-        groundTilemap = timeMapSO.ground;
-        collisionTilemap = timeMapSO.collision;
     }
     void Update()
     {
-        direction = playerInput.direction;
-
         networkTimer.Update(Time.deltaTime); //Timer is a class that have the update method to update the timer
         reconciliationCooldown.Tick(Time.deltaTime);
-
     }
 
-    void FixedUpdate()
+    private void FixedUpdate()
     {
         while (networkTimer.ShouldTick()) //ShouldTick() returns true everytime the timer is bigger than the minimun tick timer
         {
@@ -184,7 +174,7 @@ public class PlayerMovement : NetworkBehaviour
     #endregion
 
     #region Reconciliation
-    private void HandleServerTick() //while there's input to read add to the buffer and process this movement
+    public void HandleServerTick() //while there's input to read add to the buffer and process this movement
     {
         if (!IsServer)
             return;
@@ -218,7 +208,7 @@ public class PlayerMovement : NetworkBehaviour
     }
 
     //Take the input and process a movement with it, in the end put the input to a buffer for the server to look at it after, and check it with the state
-    private void HandleClientTick()
+    public void HandleClientTick()
     {
         if (!IsClient || !IsOwner)
             return;

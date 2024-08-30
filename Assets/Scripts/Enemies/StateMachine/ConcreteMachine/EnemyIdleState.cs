@@ -6,7 +6,7 @@ public class EnemyIdleState : EnemyState
 {
 
 
-    public EnemyIdleState(Enemy enemy, EnemyStateMachine enemyStateMachine) : base(enemy, enemyStateMachine) { }
+    public EnemyIdleState(Enemy enemy, StateMachine<EnemyState> enemyStateMachine) : base(enemy, enemyStateMachine) { }
     public override void EnterState() 
     {
         base.EnterState();
