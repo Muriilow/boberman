@@ -1,40 +1,51 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-
+using Utilities;
 
 public class ManageDrops : NetworkBehaviour
 {
     [SerializeField] private Transform wallsParent;
+    public static ManageDrops Instance { get; private set; }
 
-    #region Tilemaps
+    [Header("Tilemaps")]
     public Transform wall;
     [SerializeField] private Tilemap tileMap;
     [SerializeField] private Tile spawnTile;
     [SerializeField] private Tile[] ground;
     [SerializeField] private Tile[] indestructible;
-    #endregion
 
-    private Grid<BackgroundTile> walls;
-
+    [Header("Grid")]
+    public Grid<BackgroundTile> walls;
     [SerializeField] private Vector3Int size;
-    [SerializeField] private Vector3Int origin;
+    public Vector3Int origin;
 
+    [Header("Game Variables")]
     [Range(0f, 1f)]
-    [SerializeField] private float bricksPercentage; 
+    [SerializeField] private float bricksPercentage;
+
+    [Header("Debug")]
+    [SerializeField] private Transform isUsableParent;
+    [SerializeField] private Transform hasWallParent;
+    private TextMesh[,] hasWall;
+
     private void Awake()
     {
+        
         size = tileMap.size;
-
+        Instance = this;
         walls = new Grid<BackgroundTile>(size.x, size.y);
+        hasWall = new TextMesh[size.x, size.y];
+        origin = tileMap.origin;
     }
 
     private void Start()
     {
-        origin = tileMap.origin;
+
         //Debug.Log(origin);
 
         //CreateTilesRpc();
@@ -48,26 +59,28 @@ public class ManageDrops : NetworkBehaviour
             for (int j = 0; j < size.y; j++)
             {
                 float chance = UnityEngine.Random.Range(0f, 1f);
-                Vector3Int _pos = new Vector3Int(i + origin.x, j + origin.y, origin.z);
-                if (walls.gridArray[i, j].IsUsable && ShouldCreate(_pos) && chance < bricksPercentage)
+                Vector3Int pos = new Vector3Int(i + origin.x, j + origin.y, origin.z);
+                if (CanCreate(i, j, pos, chance))
                 {
-                    wall = Instantiate(wall, _pos, Quaternion.identity);
-                    walls.gridArray[i, j].wall = wall.gameObject;
+                    wall = Instantiate(wall, pos, Quaternion.identity);
+                    walls.gridArray[i, j].HasWall = true;
+                    walls.gridArray[i, j].Wall = wall.gameObject;
                     wall.GetComponent<NetworkObject>().Spawn(true);
 
                     wall.name = "wall";
                     wall.SetParent(wallsParent);
                 }
-
+                hasWall[i, j] = DebugGrid.CreateWorldText(hasWallParent, CanCreate(i, j, pos, chance) ? "1" : "0", pos, 10, Color.white, TextAnchor.MiddleCenter);
             }
     }
 
+    private bool CanCreate(int i, int j, Vector3Int pos, float chance) => walls.gridArray[i, j].IsUsable && ShouldCreate(pos) && chance < bricksPercentage;
     private bool ShouldCreate(Vector3Int _pos)
     {
         Tile _tile = tileMap.GetTile(_pos) as Tile;
 
 
-        if (_tile == spawnTile) //check if this is spawn
+        if (_tile == spawnTile) //check if this is spawn TODO!!!
             return false;
 
         for (int i = 0; i < ground.Length; i++)
@@ -98,10 +111,22 @@ public class ManageDrops : NetworkBehaviour
             for (int j = 0; j < size.y; j++)
             {
                 Vector3Int _pos = new Vector3Int(i + origin.x, j + origin.y, origin.z);
-                walls.gridArray[i, j] = new BackgroundTile(UsableTile(_pos), null);
+                walls.gridArray[i, j] = new BackgroundTile(UsableTile(_pos), false, null, _pos.x, _pos.y);
+
+                DebugGrid.CreateWorldText(isUsableParent, UsableTile(_pos) ? "1" : "0", _pos, 10, Color.white, TextAnchor.MiddleCenter);
 
                 //Debug.Log(i + "," + j);
             }
+    }
+    
+    public void RemoveWalls(int XIndex, int YIndex)
+    {
+        GameObject wall = walls.gridArray[XIndex, YIndex].Wall;
+        Destroy(wall);
+
+        walls.gridArray[XIndex, YIndex].HasWall = false;
+        walls.gridArray[XIndex, YIndex].Wall = null;
+        hasWall[XIndex, YIndex].text = "0";
     }
 
     // Update is called once per frame

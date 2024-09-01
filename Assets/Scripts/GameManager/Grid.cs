@@ -4,14 +4,15 @@ using UnityEngine;
 
 public class Grid<T>
 {
-    private int width;
-    private int height;
+    public int Width { get; set; }
+    public int Height { get; set; }
+
     public T[,] gridArray;
 
     public Grid(int width, int height)
     {
-        this.width = width;
-        this.height = height;
+        this.Width = width;
+        this.Height = height;
 
         gridArray = new T[width, height];
 
@@ -21,12 +22,19 @@ public class Grid<T>
 public class BackgroundTile
 {
     public bool IsUsable { get; set; }
-    public GameObject wall;
+    public bool HasWall {  get; set; }
+    public int X { get; set; }
+    public int Y { get; set; }
 
-    public BackgroundTile(bool isUsable, GameObject wall)
+    public GameObject Wall { get; set; }
+
+    public BackgroundTile(bool isUsable, bool hasWall, GameObject wall, int x, int y)
     {
         IsUsable = isUsable;
-        this.wall = wall;
+        HasWall = hasWall;
+        Wall = wall;
+        X = x;
+        Y = Y;
     }
 }
 

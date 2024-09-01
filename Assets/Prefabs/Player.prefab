@@ -70,8 +70,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -1151522483
+  m_SortingLayer: 2
   m_SortingOrder: 0
   m_Sprite: {fileID: 306372094466807954, guid: 131fd62ecd3e3d24699ac2e4e38ee3b7, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -102,6 +102,7 @@ GameObject:
   - component: {fileID: 8537359618410290985}
   - component: {fileID: -4774130975421435273}
   - component: {fileID: 2831903854507580457}
+  - component: {fileID: -3558616741636204773}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -326,3 +327,27 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.3
+--- !u!114 &-3558616741636204773
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8998316997674671113}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 81522d19308901b4babd7a896905b115, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bombPrefab: {fileID: 8442374029692332420, guid: a317c3e02e309ff40a53592fbcd4dd55, type: 3}
+  bombFuseTime: 3
+  bombAmount: 4
+  bombsRemaining: 0
+  explosionStartPrefab: {fileID: 2203190960442850925, guid: 10ce69ec530a0a1498327fc19787110c, type: 3}
+  explosionMiddlePrefab: {fileID: 6459205583992980324, guid: 2bfd3c98c10f10744b2f4812d40663ef, type: 3}
+  explosionEndPrefab: {fileID: 5085938049071433517, guid: a7d7d60b5929f104dbe426cfb8f920e6, type: 3}
+  indestructibleLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  explosionRadius: 3
+  manageDrops: {fileID: 0}

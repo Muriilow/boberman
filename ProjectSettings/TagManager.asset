@@ -11,8 +11,8 @@ TagManager:
   - 
   - Water
   - UI
+  - Indestructible
   - Walls
-  - 
   - 
   - 
   - 
@@ -43,4 +43,10 @@ TagManager:
     locked: 0
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Bomb
+    uniqueID: 765431767
+    locked: 0
+  - name: Player
+    uniqueID: 3143444813
     locked: 0
