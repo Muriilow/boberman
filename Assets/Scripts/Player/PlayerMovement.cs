@@ -54,7 +54,8 @@ public struct StatePayload : INetworkSerializable
 public class PlayerMovement : NetworkBehaviour
 {
     [Header("Movement")]
-    [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] public float moveSpeed = 5f;
+    [SerializeField] public float maxMoveSpeed = 9f;
     [SerializeField] private Rigidbody2D rigidBody;
     [SerializeField] public PlayerInputSystem playerInput;
     [SerializeField] public Vector2 direction;
@@ -170,6 +171,14 @@ public class PlayerMovement : NetworkBehaviour
     {
         //Maybe add something in the future 
         return true;
+    }
+
+    public void AddMoveSpeed(int amount)
+    {
+        if (moveSpeed + amount < maxMoveSpeed)
+            moveSpeed += amount;
+        else
+            moveSpeed = maxMoveSpeed;
     }
     #endregion
 

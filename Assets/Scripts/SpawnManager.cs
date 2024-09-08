@@ -13,6 +13,7 @@ public class SpawnManager : NetworkBehaviour
 
     public List<Vector3Int> spawnPoints = new List<Vector3Int>();
 
+    //Get all the tiles in the tilemap and save the spawnpoints tile into a list
     private void Awake()
     {
         Instance = this;

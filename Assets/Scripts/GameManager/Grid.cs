@@ -27,14 +27,15 @@ public class BackgroundTile
     public int Y { get; set; }
 
     public GameObject Wall { get; set; }
-
-    public BackgroundTile(bool isUsable, bool hasWall, GameObject wall, int x, int y)
+    public GameObject Item { get; set; }
+    public BackgroundTile(bool isUsable, bool hasWall, GameObject wall, GameObject item, int x, int y)
     {
         IsUsable = isUsable;
         HasWall = hasWall;
         Wall = wall;
         X = x;
-        Y = Y;
+        Y = y;
+        Item = item;
     }
 }
 

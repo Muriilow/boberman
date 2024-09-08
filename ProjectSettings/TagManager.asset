@@ -44,6 +44,15 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: PowerUp
+    uniqueID: 845491741
+    locked: 0
+  - name: Wall
+    uniqueID: 3259938911
+    locked: 0
+  - name: Explosion
+    uniqueID: 1414420561
+    locked: 0
   - name: Bomb
     uniqueID: 765431767
     locked: 0

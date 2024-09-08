@@ -22,7 +22,6 @@ public class Explosion : NetworkBehaviour
     [Rpc(SendTo.Server)]
     public void DestroyAnimationServerRpc()
     {
-        Destroy(gameObject);
-        GetComponent<NetworkObject>().Spawn(false);
+        GetComponent<NetworkObject>().Despawn(true);
     }
 }

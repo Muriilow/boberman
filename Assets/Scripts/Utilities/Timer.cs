@@ -13,6 +13,7 @@ namespace Utilities
         public Action OnTimerStart = delegate { };
         public Action OnTimerStop = delegate { };
 
+        
         protected Timer(float value)
         {
             initialTime = value;
@@ -60,8 +61,6 @@ namespace Utilities
                 Stop();
             }
         }
-
-        public bool IsFinished => Time <= 0;
 
         public void Reset() => Time = initialTime;
 
