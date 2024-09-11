@@ -39,3 +39,20 @@ public class BackgroundTile
     }
 }
 
+public class BackgroundBomb
+{
+    public bool IsUsable { get; set; }
+    public bool HasBomb { get; set; }
+    public int X { get; set; }
+    public int Y { get; set; }
+    public GameObject Bomb { get; set; }
+    public BackgroundBomb(bool isUsable, bool hasBomb, GameObject bomb, int x, int y)
+    {
+        IsUsable = isUsable;
+        HasBomb = hasBomb;
+        Bomb = bomb;
+        X = x;
+        Y = y;
+    }
+}
+

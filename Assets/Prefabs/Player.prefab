@@ -342,14 +342,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _bombPrefab: {fileID: 8442374029692332420, guid: a317c3e02e309ff40a53592fbcd4dd55, type: 3}
   _bombFuseTime: 0
+  _bombsRemaining:
+    m_InternalValue: 1
   _bombAmount: 0
-  _bombsRemaining: 0
+  _maxBombAmount: 0
   _explosionStartPrefab: {fileID: 2203190960442850925, guid: 10ce69ec530a0a1498327fc19787110c, type: 3}
   _explosionMiddlePrefab: {fileID: 6459205583992980324, guid: 2bfd3c98c10f10744b2f4812d40663ef, type: 3}
   _explosionEndPrefab: {fileID: 5085938049071433517, guid: a7d7d60b5929f104dbe426cfb8f920e6, type: 3}
   _indestructibleLayer:
     serializedVersion: 2
     m_Bits: 64
-  explosionRadius: 1
-  maxRadius: 0
+  _explosionRadius:
+    m_InternalValue: 1
+  _maxRadius: 0
+  manageDrops: {fileID: 11400000, guid: 03c8f7a823195c045bc305ab63ae42f9, type: 2}
   _manageDrops: {fileID: 0}
