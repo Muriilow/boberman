@@ -4,11 +4,11 @@ using UnityEngine;
 
 public class PlayerAttackingState : PlayerState
 {
-    public PlayerAttackingState(PlayerManager player, PlayerMovement playerMovement, PlayerInputSystem playerInput, StateMachine<PlayerState> playerStateMachine) : base(player, playerMovement, playerInput, playerStateMachine)
+    public PlayerAttackingState(PlayerManager player, PlayerMovement playerMovement, PlayerInputSystem playerInput, StateMachine<PlayerState> playerStateMachine, Animator playerAnimator) : base(player, playerMovement, playerInput, playerStateMachine, playerAnimator)
     {
     }
 
-    public override void AnimationTriggerEvent(PlayerManager.PlayerAnimationTriggerType triggerType)
+    public override void AnimationTriggerEvent(string triggerType)
     {
         base.AnimationTriggerEvent(triggerType);
     }

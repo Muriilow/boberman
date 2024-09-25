@@ -1894,7 +1894,7 @@ MonoBehaviour:
     EnableNetworkLogs: 1
     OldPrefabList: []
   RunInBackground: 1
-  LogLevel: 1
+  LogLevel: 0
 --- !u!4 &1906989406
 Transform:
   m_ObjectHideFlags: 0
@@ -4290,10 +4290,6 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2021426883}
     - target: {fileID: 5221767922051902350, guid: d74ffb41cd59143408bf455222c72ffe, type: 3}
-      propertyPath: manageDrops
-      value: 
-      objectReference: {fileID: 11400000, guid: 03c8f7a823195c045bc305ab63ae42f9, type: 2}
-    - target: {fileID: 5221767922051902350, guid: d74ffb41cd59143408bf455222c72ffe, type: 3}
       propertyPath: wallsParent
       value: 
       objectReference: {fileID: 183473528}
@@ -4316,10 +4312,6 @@ PrefabInstance:
     - target: {fileID: 7430105449732958237, guid: d74ffb41cd59143408bf455222c72ffe, type: 3}
       propertyPath: GlobalObjectIdHash
       value: 3155110782
-      objectReference: {fileID: 0}
-    - target: {fileID: 7430105449732958237, guid: d74ffb41cd59143408bf455222c72ffe, type: 3}
-      propertyPath: InScenePlacedSourceGlobalObjectIdHash
-      value: 1523977643
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

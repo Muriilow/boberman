@@ -6,6 +6,7 @@ using UnityEngine.InputSystem;
 
 public class PlayerManager : NetworkBehaviour, IDamageable
 {
+    public Animator PlayerAnimator { get; private set; }
     public PlayerMovement PlayerMovement {  get; private set; }
     public PlayerInputSystem PlayerInput { get; private set; }
     public StateMachine<PlayerState> StateMachine { get; set; }
@@ -20,19 +21,25 @@ public class PlayerManager : NetworkBehaviour, IDamageable
     public bool IsWalking { get; set; }
     public bool IsAtacking { get; set; }
 
+    public string CurrentState { get; private set; }
+
     private void Awake()
     {
+
+        PlayerAnimator = GetComponent<Animator>();
         PlayerMovement = GetComponent<PlayerMovement>();
         PlayerInput = GetComponent<PlayerInputSystem>();
         StateMachine = new StateMachine<PlayerState>();
 
-        IdleState = new PlayerIdleState(this, PlayerMovement, PlayerInput, StateMachine);
-        WalkingState = new PlayerWalkingState(this, PlayerMovement, PlayerInput, StateMachine);
-        AttackingState = new PlayerAttackingState(this, PlayerMovement, PlayerInput, StateMachine);
+        IdleState = new PlayerIdleState(this, PlayerMovement, PlayerInput, StateMachine, PlayerAnimator);
+        WalkingState = new PlayerWalkingState(this, PlayerMovement, PlayerInput, StateMachine, PlayerAnimator);
+        AttackingState = new PlayerAttackingState(this, PlayerMovement, PlayerInput, StateMachine, PlayerAnimator);
     }
 
-    void Start()
+    public override void OnNetworkSpawn()
     {
+        base.OnNetworkSpawn();
+
         StateMachine.Initialize(IdleState);
         SpawnPlayer();
     }
@@ -41,10 +48,15 @@ public class PlayerManager : NetworkBehaviour, IDamageable
     // Update is called once per frame
     void Update()
     {
+        if (!IsOwner)
+            return;
         StateMachine.CurrentState.FrameUpdate();
+        Debug.Log(IsWalking);
     }
     void FixedUpdate()
     {
+        if (!IsOwner)
+            return;
         StateMachine.CurrentState.PhysicsUpdate();
     }
 
@@ -78,14 +90,16 @@ public class PlayerManager : NetworkBehaviour, IDamageable
     }
     #endregion
     #region Animation Triggers
-    private void AnimationTriggerEvent(PlayerAnimationTriggerType triggerType)
+    public void AnimationTriggerEvent(string newState)
     {
-        StateMachine.CurrentState.AnimationTriggerEvent(triggerType);
-    }
-    public enum PlayerAnimationTriggerType
-    {
-        PlayerDamaged,
-        PlayFootstepSound,
+        if (!IsOwner)
+            return;
+        if (CurrentState == newState)
+            return;
+
+        PlayerAnimator.Play(newState);
+
+        CurrentState = newState;
     }
     #endregion
 }

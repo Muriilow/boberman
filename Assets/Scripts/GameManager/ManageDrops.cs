@@ -19,7 +19,7 @@ public class ManageDrops : NetworkBehaviour
 
     [Header("Grid")]
     public Grid<BackgroundTile> _walls;
-    public Grid<BackgroundBomb> _bombs;
+    public GridStruct _bombs;
     [SerializeField] private Vector3Int _size;
     public Vector3Int origin;
 
@@ -47,8 +47,7 @@ public class ManageDrops : NetworkBehaviour
         _size = _tileMap.size;
 
         _walls = new Grid<BackgroundTile>(_size.x, _size.y);
-        _bombs = new Grid<BackgroundBomb>(_size.x, _size.y);
-
+        _bombs = new GridStruct(_size.x, _size.y);
         _hasWall = new TextMesh[_size.x, _size.y];
         _hasBomb = new TextMesh[_size.x, _size.y];
 
@@ -90,7 +89,7 @@ public class ManageDrops : NetworkBehaviour
                     wall.SetParent(wallsParent);
                 }
                 _hasWall[i, j] = DebugGrid.CreateWorldText(_hasWallParent, CanCreateWall(i, j, pos, wallChances) ? "1" : "0", pos, 10, Color.white, TextAnchor.MiddleCenter);
-                _hasBomb[i, j] = DebugGrid.CreateWorldText(_hasBombParent, "0", pos, 10, Color.white, TextAnchor.MiddleCenter);
+                _hasBomb[i, 0] = DebugGrid.CreateWorldText(_hasBombParent, "0", pos, 10, Color.white, TextAnchor.MiddleCenter);
             }
     }
 
@@ -121,7 +120,7 @@ public class ManageDrops : NetworkBehaviour
     #endregion
 
     #region Tiles
-    [Rpc(SendTo.Everyone)]
+    [Rpc(SendTo.Server)]
     public void CreateTilesServerRpc()
     {
 
@@ -131,7 +130,7 @@ public class ManageDrops : NetworkBehaviour
             {
                 Vector3Int _pos = new Vector3Int(i + origin.x, j + origin.y, origin.z);
                 _walls.gridArray[i, j] = new BackgroundTile(UsableTile(_pos), false, null, null, _pos.x, _pos.y);
-                _bombs.gridArray[i, j] = new BackgroundBomb(UsableTile(_pos), false, null, _pos.x, _pos.y);
+                _bombs.gridArray[i, j] = new BackgroundBomb(UsableTile(_pos), false, _pos.x, _pos.y);
 
                 DebugGrid.CreateWorldText(_isUsableParent, UsableTile(_pos) ? "1" : "0", _pos, 10, Color.white, TextAnchor.MiddleCenter);
 
@@ -191,9 +190,9 @@ public class ManageDrops : NetworkBehaviour
     public void UpdateTextBomb(bool hasPlace, int x, int y)
     {
         if (hasPlace)
-            _hasBomb[x, y].text = "1";
+            _hasBomb[x, 0].text = "1";
         else
-            _hasBomb[x, y].text = "0";
+            _hasBomb[x, 0].text = "0";
     }
     public void UpdateTextWall(bool hasPlace, int x, int y)
     {
@@ -207,8 +206,7 @@ public class ManageDrops : NetworkBehaviour
     #region UpdateGrid
     public void UpdateGridBomb(bool hasBomb, GameObject bomb, int x, int y)
     {
-        _bombs.gridArray[x, y].HasBomb = hasBomb;
-        _bombs.gridArray[x, y].Bomb = bomb;
+        _bombs.gridArray[x, y].hasBomb = hasBomb;
     }
     public void UpdateGridWall(bool hasWall, GameObject wall, int x, int y)
     {
@@ -218,7 +216,25 @@ public class ManageDrops : NetworkBehaviour
     #endregion
 
     #region BooleanChecks
-    public bool CheckBombs(int x, int y) => _bombs.gridArray[x, y].HasBomb;
+    [ServerRpc] //Using this to avoid a unity error.
+    public void CheckBombsServerRpc(int x, int y, ServerRpcParams serverRpcParams = default)
+    {
+        Debug.Log("hi");
+        var clientId = serverRpcParams.Receive.SenderClientId;
+
+        var client = NetworkManager.ConnectedClients[clientId];
+
+        if (_bombs.gridArray[x, y].hasBomb)
+        {
+            client.PlayerObject.GetComponent<PlayerBomb>().canPlaceBomb = false;
+            Debug.Log("set to false");
+        }
+        else
+        {
+            client.PlayerObject.GetComponent<PlayerBomb>().canPlaceBomb = true;
+            Debug.Log("Set to true");
+        }
+    }
     public bool CheckForUsableTiles(int x, int y) => !_walls.gridArray[x, y].IsUsable;
     public bool CheckForWalls(int x, int y) => _walls.gridArray[x, y].HasWall;
     #endregion
