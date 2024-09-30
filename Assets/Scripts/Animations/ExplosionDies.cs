@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-public class Dies : StateMachineBehaviour
+public class ExplosionDies : StateMachineBehaviour
 {
 
     // OnStateEnter is called when a transition starts and the state machine starts to evaluate this state

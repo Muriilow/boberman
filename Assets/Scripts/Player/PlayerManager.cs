@@ -6,9 +6,12 @@ using UnityEngine.InputSystem;
 
 public class PlayerManager : NetworkBehaviour, IDamageable
 {
+    public SpawnManager SpawnManagerRef { get; private set; }
     public Animator PlayerAnimator { get; private set; }
-    public PlayerMovement PlayerMovement {  get; private set; }
+    public AnimationClip DyingAnimation { get; private set; }
+    public PlayerMovement PlayerMovement { get; private set; }
     public PlayerInputSystem PlayerInput { get; private set; }
+
     public StateMachine<PlayerState> StateMachine { get; set; }
     //public PlayerAttackState AttackState { get; set; }
     public PlayerIdleState IdleState { get; set; }
@@ -25,7 +28,9 @@ public class PlayerManager : NetworkBehaviour, IDamageable
 
     private void Awake()
     {
-
+        MaxHealth = 1;
+        CurrentHealth = MaxHealth;
+        SpawnManagerRef = FindFirstObjectByType<SpawnManager>();
         PlayerAnimator = GetComponent<Animator>();
         PlayerMovement = GetComponent<PlayerMovement>();
         PlayerInput = GetComponent<PlayerInputSystem>();
@@ -38,10 +43,11 @@ public class PlayerManager : NetworkBehaviour, IDamageable
 
     public override void OnNetworkSpawn()
     {
+
         base.OnNetworkSpawn();
 
         StateMachine.Initialize(IdleState);
-        SpawnPlayer();
+        SpawnPlayerServerRpc();
     }
 
 
@@ -50,20 +56,21 @@ public class PlayerManager : NetworkBehaviour, IDamageable
     {
         if (!IsOwner)
             return;
+
         StateMachine.CurrentState.FrameUpdate();
-        Debug.Log(IsWalking);
     }
     void FixedUpdate()
     {
         if (!IsOwner)
             return;
+
         StateMachine.CurrentState.PhysicsUpdate();
     }
 
-    private void SpawnPlayer()
+    [Rpc(SendTo.Server)]
+    private void SpawnPlayerServerRpc()
     {
-
-        Vector3Int spawnPoint = SpawnManager.Instance.GetSpawnPoint();
+        Vector3Int spawnPoint = SpawnManagerRef.GetSpawnPoint();
         transform.position = spawnPoint;
     }
 
@@ -80,14 +87,16 @@ public class PlayerManager : NetworkBehaviour, IDamageable
         CurrentHealth -= damageAmount;
         if (CurrentHealth <= 0f)
         {
-            Die();
+            AnimationTriggerEvent("PlayerDying");
         }
     }
 
-    public void Die()
+    [Rpc(SendTo.Server)]
+    public void DieServerRpc()
     {
-        Destroy(gameObject);
+        GetComponent<NetworkObject>().Despawn(true);
     }
+
     #endregion
     #region Animation Triggers
     public void AnimationTriggerEvent(string newState)

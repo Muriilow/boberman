@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour, IDamageable, IEnemyMoveable, ITriggerCheckabled
@@ -82,11 +83,12 @@ public class Enemy : MonoBehaviour, IDamageable, IEnemyMoveable, ITriggerCheckab
         CurrentHealth -= damageAmount;
         if (CurrentHealth <= 0f)
         {
-            Die();
+            DieServerRpc();
         }
     }
 
-    public void Die()
+    [Rpc(SendTo.Server)]
+    public void DieServerRpc()
     {
         Destroy(gameObject);
     }

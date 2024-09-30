@@ -1,4 +1,3 @@
-using NetworkCode;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -60,42 +59,42 @@ public class PlayerMovement : NetworkBehaviour
     [SerializeField] public PlayerInputSystem playerInput;
     [SerializeField] public Vector2 direction;
 
-    [Header("Network")]
-    [SerializeField] private AuthorityMode authorityMode;
+    //[Header("Network")]
+    ////[SerializeField] private AuthorityMode authorityMode;
 
-    public NetworkTimer networkTimer;
-    private const float SERVERTICKRATE = 60f; //60 fps
-    private const int BUFFERSIZE = 1024;
+    //public NetworkTimer networkTimer;
+    //private const float SERVERTICKRATE = 60f; //60 fps
+    //private const int BUFFERSIZE = 1024;
 
-    [Header("Netcode Client Specific")]
-    private CircularBuffer<StatePayload> clientStateBuffer;
-    private CircularBuffer<InputPayload> clientInputBuffer;
-    private StatePayload lastServerState;
-    private StatePayload lastProcessedState;
+    //[Header("Netcode Client Specific")]
+    //private CircularBuffer<StatePayload> clientStateBuffer;
+    //private CircularBuffer<InputPayload> clientInputBuffer;
+    //private StatePayload lastServerState;
+    //private StatePayload lastProcessedState;
 
-    [Header("Netcode Server Specific")]
-    private CircularBuffer<StatePayload> serverStateBuffer;
-    private Queue<InputPayload> serverInputQueue;
+    //[Header("Netcode Server Specific")]
+    //private CircularBuffer<StatePayload> serverStateBuffer;
+    //private Queue<InputPayload> serverInputQueue;
 
-    [Header("Reconciliation")]
-    [SerializeField] private double reconciliationThreshold = 10f;
-    [SerializeField] private float reconciliationCooldownTime = 1f;
+    //[Header("Reconciliation")]
+    //[SerializeField] private double reconciliationThreshold = 10f;
+    //[SerializeField] private float reconciliationCooldownTime = 1f;
 
-    public CountdownTimer reconciliationCooldown;
+    //public CountdownTimer reconciliationCooldown;
 
 
     void Awake()
     {
         rigidBody = GetComponent<Rigidbody2D>();
-        networkTimer = new NetworkTimer(SERVERTICKRATE);
+        //networkTimer = new NetworkTimer(SERVERTICKRATE);
 
-        clientStateBuffer = new CircularBuffer<StatePayload>(BUFFERSIZE);
-        clientInputBuffer = new CircularBuffer<InputPayload>(BUFFERSIZE);
+        //clientStateBuffer = new CircularBuffer<StatePayload>(BUFFERSIZE);
+        //clientInputBuffer = new CircularBuffer<InputPayload>(BUFFERSIZE);
 
-        serverStateBuffer = new CircularBuffer<StatePayload>(BUFFERSIZE);
-        serverInputQueue = new Queue<InputPayload>();
+        //serverStateBuffer = new CircularBuffer<StatePayload>(BUFFERSIZE);
+        //serverInputQueue = new Queue<InputPayload>();
 
-        reconciliationCooldown = new CountdownTimer(reconciliationCooldownTime);
+        //reconciliationCooldown = new CountdownTimer(reconciliationCooldownTime);
 
     }
 
@@ -104,17 +103,20 @@ public class PlayerMovement : NetworkBehaviour
     }
     void Update()
     {
-        networkTimer.Update(Time.deltaTime); //Timer is a class that have the update method to update the timer
-        reconciliationCooldown.Tick(Time.deltaTime);
+        if (!IsOwner)
+            return;
+        //networkTimer.Update(Time.deltaTime); //Timer is a class that have the update method to update the timer
+        //reconciliationCooldown.Tick(Time.deltaTime);
+        Move(playerInput.direction);
     }
 
     private void FixedUpdate()
     {
-        while (networkTimer.ShouldTick()) //ShouldTick() returns true everytime the timer is bigger than the minimun tick timer
-        {
-            HandleClientTick();
-            HandleServerTick();
-        }
+        //while (networkTimer.ShouldTick()) //ShouldTick() returns true everytime the timer is bigger than the minimun tick timer
+        //{
+        //    HandleClientTick();
+        //    HandleServerTick();
+        //}
     }
     #region Basic Movement
     //Process the movement the player wants to do and return an state to save for later
@@ -183,131 +185,131 @@ public class PlayerMovement : NetworkBehaviour
     #endregion
 
     #region Reconciliation
-    public void HandleServerTick() //while there's input to read add to the buffer and process this movement
-    {
-        if (!IsServer)
-            return;
+    //public void HandleServerTick() //while there's input to read add to the buffer and process this movement
+    //{
+    //    if (!IsServer)
+    //        return;
 
-        InputPayload inputPayload = default;
-        var bufferIndex = -1;
-        while (serverInputQueue.Count > 0) 
-        {
-            inputPayload = serverInputQueue.Dequeue();
+    //    InputPayload inputPayload = default;
+    //    var bufferIndex = -1;
+    //    while (serverInputQueue.Count > 0) 
+    //    {
+    //        inputPayload = serverInputQueue.Dequeue();
 
-            bufferIndex = inputPayload.tick % BUFFERSIZE;
+    //        bufferIndex = inputPayload.tick % BUFFERSIZE;
 
-            StatePayload statePayload = ProcessMovement(inputPayload);
+    //        StatePayload statePayload = ProcessMovement(inputPayload);
 
-            serverStateBuffer.Add(statePayload, bufferIndex); //Adding the state we are modifying to the buffer of the specified index
+    //        serverStateBuffer.Add(statePayload, bufferIndex); //Adding the state we are modifying to the buffer of the specified index
 
-        }
+    //    }
 
-        if (bufferIndex == -1)
-            return;
+    //    if (bufferIndex == -1)
+    //        return;
 
-        SendToClientRpc(serverStateBuffer.Get(bufferIndex));
-    }
+    //    SendToClientRpc(serverStateBuffer.Get(bufferIndex));
+    //}
 
-    [Rpc(SendTo.NotServer)]
-    void SendToClientRpc(StatePayload statePayload)
-    {
-        if (!IsOwner)
-            return;
-        lastServerState = statePayload;
-    }
+    //[Rpc(SendTo.NotServer)]
+    //void SendToClientRpc(StatePayload statePayload)
+    //{
+    //    if (!IsOwner)
+    //        return;
+    //    lastServerState = statePayload;
+    //}
 
-    //Take the input and process a movement with it, in the end put the input to a buffer for the server to look at it after, and check it with the state
-    public void HandleClientTick()
-    {
-        if (!IsClient || !IsOwner)
-            return;
+    ////Take the input and process a movement with it, in the end put the input to a buffer for the server to look at it after, and check it with the state
+    //public void HandleClientTick()
+    //{
+    //    if (!IsClient || !IsOwner)
+    //        return;
 
-        var currentTick = networkTimer.CurrentTick; //take the tick we are in
-        var bufferIndex = currentTick % BUFFERSIZE; //Find the index of the buffer
+    //    var currentTick = networkTimer.CurrentTick; //take the tick we are in
+    //    var bufferIndex = currentTick % BUFFERSIZE; //Find the index of the buffer
 
-        InputPayload inputPayload = new InputPayload()
-        {
-            tick = currentTick,
-            timestamp = DateTime.Now,
-            networkObjectId = NetworkObjectId,
-            inputVector = direction,
-            position = transform.position
-        };
+    //    InputPayload inputPayload = new InputPayload()
+    //    {
+    //        tick = currentTick,
+    //        timestamp = DateTime.Now,
+    //        networkObjectId = NetworkObjectId,
+    //        inputVector = direction,
+    //        position = transform.position
+    //    };
 
-        clientInputBuffer.Add(inputPayload, bufferIndex);
-        SendToServerRpc(inputPayload);
+    //    clientInputBuffer.Add(inputPayload, bufferIndex);
+    //    SendToServerRpc(inputPayload);
 
-        StatePayload statePayload = ProcessMovement(inputPayload);
-        clientStateBuffer.Add(statePayload, bufferIndex);
+    //    StatePayload statePayload = ProcessMovement(inputPayload);
+    //    clientStateBuffer.Add(statePayload, bufferIndex);
 
-        HandleServerReconciliation();
-    }
+    //    HandleServerReconciliation();
+    //}
 
-    [Rpc(SendTo.Server)]
-    private void SendToServerRpc(InputPayload input) 
-    {
-        serverInputQueue.Enqueue(input);
-    }
-    private void HandleServerReconciliation() //Check if the position the player are in should be reconciliate by the server
-    {
-        if (!ShouldReconcile())
-            return;
+    //[Rpc(SendTo.Server)]
+    //private void SendToServerRpc(InputPayload input) 
+    //{
+    //    serverInputQueue.Enqueue(input);
+    //}
+    //private void HandleServerReconciliation() //Check if the position the player are in should be reconciliate by the server
+    //{
+    //    if (!ShouldReconcile())
+    //        return;
 
-        float positionError;
-        int bufferIndex;
-        StatePayload rewindState = default;
+    //    float positionError;
+    //    int bufferIndex;
+    //    StatePayload rewindState = default;
 
-        bufferIndex = lastServerState.tick % BUFFERSIZE;
+    //    bufferIndex = lastServerState.tick % BUFFERSIZE;
 
-        if (bufferIndex - 1 < 0) //Not enough information
-            return;
+    //    if (bufferIndex - 1 < 0) //Not enough information
+    //        return;
 
-        rewindState = IsHost ? serverStateBuffer.Get(bufferIndex - 1) : lastServerState; //Host RPCs execute immediately, so we can use the last server state
+    //    rewindState = IsHost ? serverStateBuffer.Get(bufferIndex - 1) : lastServerState; //Host RPCs execute immediately, so we can use the last server state
 
-        StatePayload clientState = IsHost ? clientStateBuffer.Get(bufferIndex - 1) : clientStateBuffer.Get(bufferIndex);
-        positionError = Vector3.Distance(rewindState.position, clientState.position);
+    //    StatePayload clientState = IsHost ? clientStateBuffer.Get(bufferIndex - 1) : clientStateBuffer.Get(bufferIndex);
+    //    positionError = Vector3.Distance(rewindState.position, clientState.position);
 
-        if (positionError > reconciliationThreshold)
-        {
-            ReconcileState(rewindState);
-            reconciliationCooldown.Start();
-        }
-        lastProcessedState = rewindState;
-    }
+    //    if (positionError > reconciliationThreshold)
+    //    {
+    //        ReconcileState(rewindState);
+    //        reconciliationCooldown.Start();
+    //    }
+    //    lastProcessedState = rewindState;
+    //}
 
-    private bool ShouldReconcile() //Check if we should reconcile and return the bool value for that
-    {
-        bool isNewServerState = !lastServerState.Equals(default);
+    //private bool ShouldReconcile() //Check if we should reconcile and return the bool value for that
+    //{
+    //    bool isNewServerState = !lastServerState.Equals(default);
 
-        bool isLastStateUnderfinedOrDifferent = lastProcessedState.Equals(default)
-                                                || !lastProcessedState.Equals(lastServerState);
+    //    bool isLastStateUnderfinedOrDifferent = lastProcessedState.Equals(default)
+    //                                            || !lastProcessedState.Equals(lastServerState);
 
-        return isNewServerState && isLastStateUnderfinedOrDifferent && !reconciliationCooldown.IsRunning;
-    }
+    //    return isNewServerState && isLastStateUnderfinedOrDifferent && !reconciliationCooldown.IsRunning;
+    //}
 
-    void ReconcileState(StatePayload rewindState)
-    {
-        transform.position = rewindState.position;
-        transform.rotation = rewindState.rotation;
-        rigidBody.velocity = rewindState.velocity;
-        rigidBody.angularVelocity = rewindState.angularVelocity;
+    //void ReconcileState(StatePayload rewindState)
+    //{
+    //    transform.position = rewindState.position;
+    //    transform.rotation = rewindState.rotation;
+    //    rigidBody.velocity = rewindState.velocity;
+    //    rigidBody.angularVelocity = rewindState.angularVelocity;
 
-        if (!rewindState.Equals(lastServerState))
-            return;
+    //    if (!rewindState.Equals(lastServerState))
+    //        return;
 
-        clientStateBuffer.Add(rewindState, rewindState.tick % BUFFERSIZE);
+    //    clientStateBuffer.Add(rewindState, rewindState.tick % BUFFERSIZE);
 
-        //replay all inputs front the rewind state to the current state
-        int tickToReplay = lastServerState.tick;
+    //    //replay all inputs front the rewind state to the current state
+    //    int tickToReplay = lastServerState.tick;
 
-        while (tickToReplay < networkTimer.CurrentTick)
-        {
-            int bufferIndex = tickToReplay % BUFFERSIZE;
-            StatePayload statePayload = ProcessMovement(clientInputBuffer.Get(bufferIndex));
-            clientStateBuffer.Add(statePayload, bufferIndex);
-            tickToReplay++;
-        }
-    }
+    //    while (tickToReplay < networkTimer.CurrentTick)
+    //    {
+    //        int bufferIndex = tickToReplay % BUFFERSIZE;
+    //        StatePayload statePayload = ProcessMovement(clientInputBuffer.Get(bufferIndex));
+    //        clientStateBuffer.Add(statePayload, bufferIndex);
+    //        tickToReplay++;
+    //    }
+    //}
     #endregion
 
 

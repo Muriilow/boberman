@@ -10,12 +10,12 @@ public class SpawnManager : NetworkBehaviour
     public static SpawnManager Instance;
     [SerializeField] private Tilemap tileMap;
     [SerializeField] private Tile spawnTile;
-
-    public List<Vector3Int> spawnPoints = new List<Vector3Int>();
+    public Stack<Vector3Int> spawnPoints = new Stack<Vector3Int>();
 
     //Get all the tiles in the tilemap and save the spawnpoints tile into a list
     private void Awake()
     {
+
         Instance = this;
         for(int i = 0; i < tileMap.size.x -1; i++) 
         {
@@ -24,12 +24,15 @@ public class SpawnManager : NetworkBehaviour
                 Vector3Int _pos = new Vector3Int(i + tileMap.origin.x, j + tileMap.origin.y, tileMap.origin.z);
                 Tile _tile = tileMap.GetTile(_pos) as Tile;
 
-                if(_tile == spawnTile)
-                    spawnPoints.Add(_pos);
+                if (_tile == spawnTile)
+                {
+                    spawnPoints.Push(_pos);
+                    Debug.Log(_pos);
+                }
             }
         }
 
     }
 
-    public Vector3Int GetSpawnPoint() => spawnPoints[Random.Range(0, spawnPoints.Count)];
+    public Vector3Int GetSpawnPoint() => spawnPoints.Pop();
 }

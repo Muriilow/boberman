@@ -6,7 +6,7 @@ public interface IDamageable
 {
     void Damage(float damageAmount);
 
-    void Die();
+    void DieServerRpc();
 
     float MaxHealth { get; set; }
 
