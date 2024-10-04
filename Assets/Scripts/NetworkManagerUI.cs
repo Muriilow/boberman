@@ -29,8 +29,8 @@ public class NetworkManagerUI : NetworkBehaviour
         });
         spawnWalls.onClick.AddListener(() =>
         {
-            ManageDrops.CreateTilesServerRpc();
-            ManageDrops.CreateWallsServerRpc();
+            ManageDrops.CreateTiles();
+            ManageDrops.CreateWalls();
         });
     }
 }

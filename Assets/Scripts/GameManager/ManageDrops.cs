@@ -19,7 +19,8 @@ public class ManageDrops : NetworkBehaviour
 
     [Header("Grid")]
     public Grid<BackgroundTile> _walls;
-    public GridStruct _bombs;
+    //public GridStruct _bombs;
+    public NetworkVariable<GridStruct> _bombs; 
     [SerializeField] private Vector3Int _size;
     public Vector3Int origin;
 
@@ -46,8 +47,10 @@ public class ManageDrops : NetworkBehaviour
 
         _size = _tileMap.size;
 
+        _bombs = new NetworkVariable<GridStruct>(new GridStruct(_size.x, _size.y), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
         _walls = new Grid<BackgroundTile>(_size.x, _size.y);
-        _bombs = new GridStruct(_size.x, _size.y);
+        //_bombs = new GridStruct(_size.x, _size.y);
         _hasWall = new TextMesh[_size.x, _size.y];
         _hasBomb = new TextMesh[_size.x, _size.y];
 
@@ -66,9 +69,11 @@ public class ManageDrops : NetworkBehaviour
 
     #region Walls
 
-    [Rpc(SendTo.Server)]
-    public void CreateWallsServerRpc()
+
+    public void CreateWalls()
     {
+        if (!IsServer)
+            return;
 
         for (int i = 0; i < _size.x - 1; i++) // really dont know why I need to subtract 1
             for (int j = 0; j < _size.y; j++)
@@ -95,6 +100,9 @@ public class ManageDrops : NetworkBehaviour
 
     public void RemoveWalls(Vector2 pos)
     {
+        if (!IsServer)
+            return;
+
         int x = (int)pos.x - origin.x;
         int y = (int)pos.y - origin.y;
 
@@ -120,9 +128,11 @@ public class ManageDrops : NetworkBehaviour
     #endregion
 
     #region Tiles
-    [Rpc(SendTo.Server)]
-    public void CreateTilesServerRpc()
+
+    public void CreateTiles()
     {
+        if (!IsServer)
+            return;
 
         //Create the tiles for all the grid, and set the isUsable variable to be true or false
         for (int i = 0; i < _size.x - 1; i++)
@@ -130,7 +140,7 @@ public class ManageDrops : NetworkBehaviour
             {
                 Vector3Int _pos = new Vector3Int(i + origin.x, j + origin.y, origin.z);
                 _walls.gridArray[i, j] = new BackgroundTile(UsableTile(_pos), false, null, null, _pos.x, _pos.y);
-                _bombs.gridArray[i, j] = new BackgroundBomb(UsableTile(_pos), false, _pos.x, _pos.y);
+                _bombs.Value.gridArray[i, j] = new BackgroundBomb(UsableTile(_pos), false, _pos.x, _pos.y);
 
                 DebugGrid.CreateWorldText(_isUsableParent, UsableTile(_pos) ? "1" : "0", _pos, 10, Color.white, TextAnchor.MiddleCenter);
 
@@ -206,7 +216,7 @@ public class ManageDrops : NetworkBehaviour
     #region UpdateGrid
     public void UpdateGridBomb(bool hasBomb, GameObject bomb, int x, int y)
     {
-        _bombs.gridArray[x, y].hasBomb = hasBomb;
+        _bombs.Value.gridArray[x, y].hasBomb = hasBomb;
     }
     public void UpdateGridWall(bool hasWall, GameObject wall, int x, int y)
     {
@@ -216,25 +226,7 @@ public class ManageDrops : NetworkBehaviour
     #endregion
 
     #region BooleanChecks
-    [ServerRpc] //Using this to avoid a unity error.
-    public void CheckBombsServerRpc(int x, int y, ServerRpcParams serverRpcParams = default)
-    {
-        Debug.Log("hi");
-        var clientId = serverRpcParams.Receive.SenderClientId;
-
-        var client = NetworkManager.ConnectedClients[clientId];
-
-        if (_bombs.gridArray[x, y].hasBomb)
-        {
-            client.PlayerObject.GetComponent<PlayerBomb>().canPlaceBomb = false;
-            Debug.Log("set to false");
-        }
-        else
-        {
-            client.PlayerObject.GetComponent<PlayerBomb>().canPlaceBomb = true;
-            Debug.Log("Set to true");
-        }
-    }
+    public bool CheckBombs(int x, int y) => _bombs.Value.gridArray[x, y].hasBomb;
     public bool CheckForUsableTiles(int x, int y) => !_walls.gridArray[x, y].IsUsable;
     public bool CheckForWalls(int x, int y) => _walls.gridArray[x, y].HasWall;
     #endregion

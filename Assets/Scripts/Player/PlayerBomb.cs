@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -10,7 +11,7 @@ public class PlayerBomb : NetworkBehaviour
     [SerializeField] private GameObject _bombPrefab;
     [SerializeField] private float _bombFuseTime;
     [SerializeField] private NetworkVariable<int> _bombsRemaining;
-    [SerializeField] private NetworkVariable<int> _bombAmount;
+    [SerializeField] private int _bombAmount;
     [SerializeField] private int _maxBombAmount;
     [SerializeField] private Queue<GameObject> bombsQueue = new Queue<GameObject>();
 
@@ -19,7 +20,7 @@ public class PlayerBomb : NetworkBehaviour
     [SerializeField] private Explosion _explosionMiddlePrefab;
     [SerializeField] private Explosion _explosionEndPrefab;
     [SerializeField] private LayerMask _indestructibleLayer;
-    [SerializeField] private NetworkVariable<int> _explosionRadius;
+    [SerializeField] private int _explosionRadius;
     [SerializeField] private int _maxRadius;
 
     [Header("References")]
@@ -27,20 +28,19 @@ public class PlayerBomb : NetworkBehaviour
 
     private void Awake()
     {
-        _bombsRemaining = new NetworkVariable<int>(1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-        _bombAmount = new NetworkVariable<int>(1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-        _explosionRadius = new NetworkVariable<int>(1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+        _manageDrops = ManageDrops.Instance;
+
+        _bombsRemaining = new NetworkVariable<int>(1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        _bombAmount = 1;
+        _explosionRadius = 1;
+        _maxBombAmount = 6;
+        _maxRadius = 5;
+        _bombFuseTime = 3f;
     }
     public override void OnNetworkSpawn()
     {
         if (!IsOwner)
             return;
-
-        _maxBombAmount = 6;
-        _maxRadius = 5;
-        _bombFuseTime = 3f;
-
-        _manageDrops = ManageDrops.Instance;
 
         base.OnNetworkSpawn();
     }
@@ -48,8 +48,6 @@ public class PlayerBomb : NetworkBehaviour
     public override void OnNetworkDespawn()
     {
         base.OnNetworkDespawn();
-        if (!IsClient) 
-            return;
 
     }
 
@@ -65,47 +63,45 @@ public class PlayerBomb : NetworkBehaviour
         CanPlaceBombServerRpc(_bombsRemaining.Value, Input.GetKeyDown(KeyCode.Space), position);
     }
 
-    #region Bombs
-    private bool HasBombInPosition(int x, int y)
-    {
-        if (_manageDrops._bombs.gridArray[x, y].hasBomb)
-            return true;
 
-        return false;
-    }
+    #region Bombs
 
     [Rpc(SendTo.Server)]
     private void CanPlaceBombServerRpc(int bombsRemaining, bool hasPressedAttack, Vector2 position)
     {
         (int x, int y) = ConvertPositionToGrid(position);
-        bool hasBomb = HasBombInPosition(x, y);
+
+        bool hasBomb = _manageDrops.CheckBombs(x, y);
 
         if(bombsRemaining > 0 && hasPressedAttack && !hasBomb)
-            StartCoroutine(WaitBomb(position));
+            StartCoroutine(WaitBomb(position, RpcTarget.Single(OwnerClientId, RpcTargetUse.Temp)));
     }
 
-    private IEnumerator WaitBomb(Vector2 position) 
+    private IEnumerator WaitBomb(Vector2 position, RpcParams rpcParams) 
     {
-        ReduceBombs(true); 
+        ulong clientId = rpcParams.Receive.SenderClientId;
+
+        var clientObj = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject;
+
+        PlayerBomb clientScript = clientObj.GetComponent<PlayerBomb>();
+
+        Debug.Log(clientObj);
+        Debug.Log(clientScript);
+        Debug.Log(clientId);
+
+        clientScript._bombsRemaining.Value--;
 
         SpawnBombServerRpc(position);
 
         yield return new WaitForSeconds(_bombFuseTime);
 
-        StartExplosionServerRpc(position);
+        StartExplosionServerRpc(position, _explosionRadius);
 
         DestroyBombServerRpc(position);
 
-        ReduceBombs(false);
+        clientScript._bombsRemaining.Value++;
     }
 
-    private void ReduceBombs(bool reduce)
-    {
-        if(reduce)
-            _bombsRemaining.Value--;
-        else
-            _bombsRemaining.Value++;
-    }
 
     [Rpc(SendTo.Server)]
     public void SpawnBombServerRpc(Vector2 position)
@@ -134,16 +130,16 @@ public class PlayerBomb : NetworkBehaviour
 
     #region Explosions
     [Rpc(SendTo.Server)]
-    private void StartExplosionServerRpc(Vector2 position)
+    private void StartExplosionServerRpc(Vector2 position, int explosionRadius)
     {
 
         Explosion explosion = Instantiate(_explosionStartPrefab, position, Quaternion.identity);
         explosion.GetComponent<NetworkObject>().Spawn(true);
 
-        ExplodeServerRpc(position, Vector2.up, _explosionRadius.Value);
-        ExplodeServerRpc(position, Vector2.down, _explosionRadius.Value);
-        ExplodeServerRpc(position, Vector2.left, _explosionRadius.Value);
-        ExplodeServerRpc(position, Vector2.right, _explosionRadius.Value);
+        ExplodeServerRpc(position, Vector2.up, explosionRadius);
+        ExplodeServerRpc(position, Vector2.down, explosionRadius);
+        ExplodeServerRpc(position, Vector2.left, explosionRadius);
+        ExplodeServerRpc(position, Vector2.right, explosionRadius);
     }
 
     [Rpc(SendTo.Server)]
@@ -176,21 +172,27 @@ public class PlayerBomb : NetworkBehaviour
     #region Upgrades
     public void AddBomb(int amount)
     {
-        if (_bombAmount.Value < _maxBombAmount)
+        if (!IsOwner)
+            return;
+
+        if (_bombAmount < _maxBombAmount)
         {
-            _bombAmount.Value += amount;
+            _bombAmount += amount;
             _bombsRemaining.Value += amount;
         }
         else
-            _bombsRemaining.Value = _bombAmount.Value;
+            _bombsRemaining.Value = _bombAmount;
     }
 
     public void AddRadius(int amount)
     {
-        if (_explosionRadius.Value + amount < _maxRadius)
-            _explosionRadius.Value += amount;
+        if (!IsOwner)
+            return;
+
+        if (_explosionRadius + amount < _maxRadius)
+            _explosionRadius += amount;
         else
-            _explosionRadius.Value = _maxRadius;
+            _explosionRadius = _maxRadius;
     }
     #endregion
 
