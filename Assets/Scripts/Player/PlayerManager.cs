@@ -17,6 +17,7 @@ public class PlayerManager : NetworkBehaviour, IDamageable
     public PlayerIdleState IdleState { get; set; }
     public PlayerWalkingState WalkingState { get; set; }
     public PlayerAttackingState AttackingState { get; set; }
+    public PlayerDieState DieState { get; set; }
 
     public float MaxHealth { get; set; }
     public float CurrentHealth { get; set; }
@@ -39,6 +40,7 @@ public class PlayerManager : NetworkBehaviour, IDamageable
         IdleState = new PlayerIdleState(this, PlayerMovement, PlayerInput, StateMachine, PlayerAnimator);
         WalkingState = new PlayerWalkingState(this, PlayerMovement, PlayerInput, StateMachine, PlayerAnimator);
         AttackingState = new PlayerAttackingState(this, PlayerMovement, PlayerInput, StateMachine, PlayerAnimator);
+        DieState = new PlayerDieState(this, PlayerMovement, PlayerInput, StateMachine, PlayerAnimator);
     }
 
     public override void OnNetworkSpawn()
@@ -87,7 +89,7 @@ public class PlayerManager : NetworkBehaviour, IDamageable
         CurrentHealth -= damageAmount;
         if (CurrentHealth <= 0f)
         {
-            AnimationTriggerEvent("PlayerDying");
+            StateMachine.ChangeState(DieState);
         }
     }
 

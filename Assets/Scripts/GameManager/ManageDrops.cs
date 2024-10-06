@@ -10,7 +10,7 @@ public class ManageDrops : NetworkBehaviour
     [SerializeField] public static ManageDrops Instance {get; private set;}
 
     [Header("Tilemaps")]
-    public Transform wall;
+    [SerializeField] private Transform _wall;
     [SerializeField] private Tilemap _tileMap;
     [SerializeField] private Tile _spawnTile;
     [SerializeField] private Tile _spawnBoundariesTile;
@@ -18,9 +18,8 @@ public class ManageDrops : NetworkBehaviour
     [SerializeField] private Tile[] _indestructible;
 
     [Header("Grid")]
-    public Grid<BackgroundTile> _walls;
-    //public GridStruct _bombs;
-    public NetworkVariable<GridStruct> _bombs; 
+    private Grid<BackgroundTile> _walls;
+    private NetworkVariable<GridStruct> _bombs; 
     [SerializeField] private Vector3Int _size;
     public Vector3Int origin;
 
@@ -47,29 +46,17 @@ public class ManageDrops : NetworkBehaviour
 
         _size = _tileMap.size;
 
-        _bombs = new NetworkVariable<GridStruct>(new GridStruct(_size.x, _size.y), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        _bombs = new NetworkVariable<GridStruct>(new GridStruct(_size.x, _size.y), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server); //Maybe revert this to a normal grid class? 
 
         _walls = new Grid<BackgroundTile>(_size.x, _size.y);
-        //_bombs = new GridStruct(_size.x, _size.y);
+
         _hasWall = new TextMesh[_size.x, _size.y];
         _hasBomb = new TextMesh[_size.x, _size.y];
 
         origin = _tileMap.origin;
     }
 
-    override public void OnNetworkSpawn()
-    {
-
-        //Debug.Log(origin);
-
-        //CreateTilesServerRpc();
-        //CreateWallsServerRpc();
-    }
-
-
     #region Walls
-
-
     public void CreateWalls()
     {
         if (!IsServer)
@@ -85,16 +72,17 @@ public class ManageDrops : NetworkBehaviour
 
                 if (CanCreateWall(i, j, pos, wallChances))
                 {
-                    wall = Instantiate(wall, pos, Quaternion.identity);
-                    UpdateGridWall(true, wall.gameObject, i, j);
+                    _wall = Instantiate(_wall, pos, Quaternion.identity);
+                    UpdateGridWall(true, _wall.gameObject, i, j);
                     _walls.gridArray[i, j].Item = GetPowerUp(powerUpChances);
-                    wall.GetComponent<NetworkObject>().Spawn(true);
+                    _wall.GetComponent<NetworkObject>().Spawn(true);
 
-                    wall.name = "wall";
-                    wall.SetParent(wallsParent);
+                    _wall.name = "wall";
+                    _wall.SetParent(wallsParent);
                 }
+
                 _hasWall[i, j] = DebugGrid.CreateWorldText(_hasWallParent, CanCreateWall(i, j, pos, wallChances) ? "1" : "0", pos, 10, Color.white, TextAnchor.MiddleCenter);
-                _hasBomb[i, 0] = DebugGrid.CreateWorldText(_hasBombParent, "0", pos, 10, Color.white, TextAnchor.MiddleCenter);
+                _hasBomb[i, j] = DebugGrid.CreateWorldText(_hasBombParent, "0", pos, 10, Color.white, TextAnchor.MiddleCenter);
             }
     }
 
@@ -114,7 +102,7 @@ public class ManageDrops : NetworkBehaviour
 
         UpdateGridWall(false, null, x, y);
 
-        UpdateTextWall(false, x, y); //Updating the debugGrid
+        UpdateTextWall(false, x, y);
 
         if (item == null)
             return;
@@ -123,8 +111,25 @@ public class ManageDrops : NetworkBehaviour
         powerUp.GetComponent<NetworkObject>().Spawn(true);
     }
 
-    private bool CanCreateWall(int i, int j, Vector3Int pos, float chance) => _walls.gridArray[i, j].IsUsable && CheckTile(pos) && chance < _bricksPercentage;
+    private GameObject GetPowerUp(float chance)
+    {
+        if (chance >= _powerUpPercentage)
+            return null;
 
+        int index = UnityEngine.Random.Range(0, 3);
+        switch (index)
+        {
+            case 0:
+                return _speedPW.prefab;
+            case 1:
+                return _blastPW.prefab;
+            case 2:
+                return _bombPW.prefab;
+
+            default:
+                return null;
+        }
+    }
     #endregion
 
     #region Tiles
@@ -174,35 +179,14 @@ public class ManageDrops : NetworkBehaviour
         return false;
     }
     #endregion
-    private GameObject GetPowerUp(float chance)
-    {
-        if (!CanCreatePowerUp(chance))
-            return null;
-
-        int index = UnityEngine.Random.Range(0, 3);
-        switch (index)
-        {
-            case 0:
-                return _speedPW.prefab;
-            case 1:
-                return _blastPW.prefab;
-            case 2:
-                return _bombPW.prefab;
-
-            default:
-                return null;
-        }
-
-    }
-    private bool CanCreatePowerUp(float chance) => chance < _powerUpPercentage;
 
     #region UpdateDebug
     public void UpdateTextBomb(bool hasPlace, int x, int y)
     {
         if (hasPlace)
-            _hasBomb[x, 0].text = "1";
+            _hasBomb[x, y].text = "1";
         else
-            _hasBomb[x, 0].text = "0";
+            _hasBomb[x, y].text = "0";
     }
     public void UpdateTextWall(bool hasPlace, int x, int y)
     {
@@ -214,7 +198,7 @@ public class ManageDrops : NetworkBehaviour
     #endregion
 
     #region UpdateGrid
-    public void UpdateGridBomb(bool hasBomb, GameObject bomb, int x, int y)
+    public void UpdateGridBomb(bool hasBomb, int x, int y)
     {
         _bombs.Value.gridArray[x, y].hasBomb = hasBomb;
     }
@@ -229,5 +213,6 @@ public class ManageDrops : NetworkBehaviour
     public bool CheckBombs(int x, int y) => _bombs.Value.gridArray[x, y].hasBomb;
     public bool CheckForUsableTiles(int x, int y) => !_walls.gridArray[x, y].IsUsable;
     public bool CheckForWalls(int x, int y) => _walls.gridArray[x, y].HasWall;
+    private bool CanCreateWall(int i, int j, Vector3Int pos, float chance) => _walls.gridArray[i, j].IsUsable && CheckTile(pos) && chance < _bricksPercentage;
     #endregion
 }

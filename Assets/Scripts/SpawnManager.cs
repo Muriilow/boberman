@@ -27,7 +27,6 @@ public class SpawnManager : NetworkBehaviour
                 if (_tile == spawnTile)
                 {
                     spawnPoints.Push(_pos);
-                    Debug.Log(_pos);
                 }
             }
         }

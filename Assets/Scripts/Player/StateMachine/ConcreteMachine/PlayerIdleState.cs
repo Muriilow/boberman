@@ -19,7 +19,6 @@ public class PlayerIdleState : PlayerState
     public override void EnterState()
     {
         base.EnterState();
-        Debug.Log("idle rn");
 
         if (player.CurrentState == "PlayerWalkingStateUp")
             player.AnimationTriggerEvent("PlayerIdleUp");

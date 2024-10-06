@@ -71,7 +71,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 765431767
-  m_SortingLayer: 1
+  m_SortingLayer: 4
   m_SortingOrder: 0
   m_Sprite: {fileID: -1483665779731714255, guid: 975894a97cf0594469745d6e9e8bd8e0, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -98,6 +98,7 @@ GameObject:
   - component: {fileID: 1750578613938090981}
   - component: {fileID: 8244438192001589627}
   - component: {fileID: 904548264306204789}
+  - component: {fileID: -5507061059414600850}
   m_Layer: 0
   m_Name: Bomb
   m_TagString: Untagged
@@ -150,7 +151,7 @@ Rigidbody2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8442374029692332420}
-  m_BodyType: 0
+  m_BodyType: 2
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
@@ -168,7 +169,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 4
+  m_Constraints: 7
 --- !u!114 &1750578613938090981
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -247,3 +248,23 @@ CircleCollider2D:
   m_Offset: {x: 0, y: -0.03}
   serializedVersion: 2
   m_Radius: 0.4
+--- !u!114 &-5507061059414600850
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8442374029692332420}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c5eb03db4fe830478c3138ca670e7ed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _explosionStartPrefab: {fileID: 2203190960442850925, guid: 10ce69ec530a0a1498327fc19787110c, type: 3}
+  _explosionMiddlePrefab: {fileID: 6459205583992980324, guid: 2bfd3c98c10f10744b2f4812d40663ef, type: 3}
+  _explosionEndPrefab: {fileID: 5085938049071433517, guid: a7d7d60b5929f104dbe426cfb8f920e6, type: 3}
+  _manageDrops: {fileID: 0}
+  _playerBomb: {fileID: 0}
+  _explosionRadius: 0
+  _bombFuseTime: 0
+  _initialPos: {x: 0, y: 0}

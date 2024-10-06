@@ -7,6 +7,7 @@ public abstract class PowerUpPickable : NetworkBehaviour, IPickable
 {
     public float timerLife = 10;
     public CountdownTimer Timer { get; set; }
+
     [Rpc(SendTo.Server)]
     public void DesappearServerRpc()
     {
