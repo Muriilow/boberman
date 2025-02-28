@@ -1,14 +1,15 @@
 using System;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.Tilemaps;
 using Utilities;
 
 public class ManageDrops : NetworkBehaviour
 {
-    [SerializeField] private Transform wallsParent;
-    [SerializeField] public static ManageDrops Instance {get; private set;}
-
+    [SerializeField] private Transform _wallsParent;
+     public static ManageDrops Instance {get; private set;}
+     
     [Header("Tilemaps")]
     [SerializeField] private Transform _wall;
     [SerializeField] private Tilemap _tileMap;
@@ -37,16 +38,19 @@ public class ManageDrops : NetworkBehaviour
     private TextMesh[,] _hasBomb;
 
     [Header("Itens")]
-    [SerializeField] private Speed _speedPW;
-    [SerializeField] private Blast _blastPW;
-    [SerializeField] private Bomb _bombPW;
+    [SerializeField] private Speed _speedPw;
+    [SerializeField] private Blast _blastPw;
+    [SerializeField] private Bomb _bombPw;
     private void Awake()
     {
         Instance = this;
 
         _size = _tileMap.size;
 
-        _bombs = new NetworkVariable<GridStruct>(new GridStruct(_size.x, _size.y), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server); //Maybe revert this to a normal grid class? 
+        //Maybe revert this to a normal grid class?
+        _bombs = new NetworkVariable<GridStruct>(new GridStruct(_size.x, _size.y),
+                                                NetworkVariableReadPermission.Everyone,
+                                                NetworkVariableWritePermission.Server); 
 
         _walls = new Grid<BackgroundTile>(_size.x, _size.y);
 
@@ -56,13 +60,14 @@ public class ManageDrops : NetworkBehaviour
         origin = _tileMap.origin;
     }
 
+
     #region Walls
     public void CreateWalls()
     {
         if (!IsServer)
             return;
 
-        for (int i = 0; i < _size.x - 1; i++) // really dont know why I need to subtract 1
+        for (int i = 0; i < _size.x - 1; i++) // really don't know why I need to subtract 1
             for (int j = 0; j < _size.y; j++)
             {
                 float wallChances = UnityEngine.Random.Range(0f, 1f);
@@ -78,11 +83,22 @@ public class ManageDrops : NetworkBehaviour
                     _wall.GetComponent<NetworkObject>().Spawn(true);
 
                     _wall.name = "wall";
-                    _wall.SetParent(wallsParent);
+                    _wall.SetParent(_wallsParent);
                 }
 
-                _hasWall[i, j] = DebugGrid.CreateWorldText(_hasWallParent, CanCreateWall(i, j, pos, wallChances) ? "1" : "0", pos, 10, Color.white, TextAnchor.MiddleCenter);
-                _hasBomb[i, j] = DebugGrid.CreateWorldText(_hasBombParent, "0", pos, 10, Color.white, TextAnchor.MiddleCenter);
+                _hasWall[i, j] = DebugGrid.CreateWorldText(_hasWallParent,
+                                                            CanCreateWall(i, j, pos, wallChances) ? "1" : "0",
+                                                            pos,
+                                                            10,
+                                                            Color.white,
+                                                            TextAnchor.MiddleCenter);
+                
+                _hasBomb[i, j] = DebugGrid.CreateWorldText(_hasBombParent,
+                                                        "0",
+                                                        pos,
+                                                        10,
+                                                        Color.white,
+                                                        TextAnchor.MiddleCenter);
             }
     }
 
@@ -97,8 +113,8 @@ public class ManageDrops : NetworkBehaviour
         GameObject wall = _walls.gridArray[x, y].Wall;
         GameObject item = _walls.gridArray[x, y].Item;
 
-
-        wall.GetComponent<Animator>().SetBool("Destroy", true); //Activating the animation before the wall destroy
+        //Activating the animation before the wall destroy
+        wall.GetComponent<Animator>().SetBool("Destroy", true);
 
         UpdateGridWall(false, null, x, y);
 
@@ -120,11 +136,11 @@ public class ManageDrops : NetworkBehaviour
         switch (index)
         {
             case 0:
-                return _speedPW.prefab;
+                return _speedPw.prefab;
             case 1:
-                return _blastPW.prefab;
+                return _blastPw.prefab;
             case 2:
-                return _bombPW.prefab;
+                return _bombPw.prefab;
 
             default:
                 return null;
@@ -143,19 +159,22 @@ public class ManageDrops : NetworkBehaviour
         for (int i = 0; i < _size.x - 1; i++)
             for (int j = 0; j < _size.y; j++)
             {
-                Vector3Int _pos = new Vector3Int(i + origin.x, j + origin.y, origin.z);
-                _walls.gridArray[i, j] = new BackgroundTile(UsableTile(_pos), false, null, null, _pos.x, _pos.y);
-                _bombs.Value.gridArray[i, j] = new BackgroundBomb(UsableTile(_pos), false, _pos.x, _pos.y);
+                Vector3Int pos = new Vector3Int(i + origin.x, j + origin.y, origin.z);
+                _walls.gridArray[i, j] = new BackgroundTile(UsableTile(pos), false, null, null, pos.x, pos.y);
+                _bombs.Value.gridArray[i, j] = new BackgroundBomb(UsableTile(pos), false, pos.x, pos.y);
 
-                DebugGrid.CreateWorldText(_isUsableParent, UsableTile(_pos) ? "1" : "0", _pos, 10, Color.white, TextAnchor.MiddleCenter);
-
-                //Debug.Log(i + "," + j);
+                DebugGrid.CreateWorldText(_isUsableParent,
+                                            UsableTile(pos) ? "1" : "0",
+                                            pos,
+                                            10,
+                                            Color.white,
+                                            TextAnchor.MiddleCenter);
             }
     }
 
-    private bool UsableTile(Vector3Int _pos) //Should this tile be usable?
+    private bool UsableTile(Vector3Int pos) //Should this tile be usable?
     {
-        Tile _tile = _tileMap.GetTile(_pos) as Tile;
+        Tile _tile = _tileMap.GetTile(pos) as Tile;
 
         for (int i = 0; i < _indestructible.Length; i++)
             if (_tile == _indestructible[i])
@@ -164,16 +183,16 @@ public class ManageDrops : NetworkBehaviour
         return true;
     }
 
-    private bool CheckTile(Vector3Int _pos)
+    private bool CheckTile(Vector3Int pos)
     {
-        Tile _tile = _tileMap.GetTile(_pos) as Tile;
+        Tile tile = _tileMap.GetTile(pos) as Tile;
 
 
-        if (_tile == _spawnTile || _tile == _spawnBoundariesTile) //check if this is spawn TODO!!!
+        if (tile == _spawnTile || tile == _spawnBoundariesTile) //check if this is spawn TODO!!!
             return false;
 
         for (int i = 0; i < _ground.Length; i++)
-            if (_tile == _ground[i]) //Check if this is ground
+            if (tile == _ground[i]) //Check if this is ground
                 return true;
 
         return false;
@@ -213,6 +232,8 @@ public class ManageDrops : NetworkBehaviour
     public bool CheckBombs(int x, int y) => _bombs.Value.gridArray[x, y].hasBomb;
     public bool CheckForUsableTiles(int x, int y) => !_walls.gridArray[x, y].IsUsable;
     public bool CheckForWalls(int x, int y) => _walls.gridArray[x, y].HasWall;
-    private bool CanCreateWall(int i, int j, Vector3Int pos, float chance) => _walls.gridArray[i, j].IsUsable && CheckTile(pos) && chance < _bricksPercentage;
+    private bool CanCreateWall(int i, int j, Vector3Int pos, float chance) => _walls.gridArray[i, j].IsUsable
+                                                                              && CheckTile(pos)
+                                                                              && chance < _bricksPercentage;
     #endregion
 }

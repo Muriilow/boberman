@@ -4,24 +4,25 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 public class PlayerInputSystem: MonoBehaviour
 {
-    private PlayerInput playerInput;
-    private PlayerManager playerManager;
+    private PlayerInput _playerInput;
+    private PlayerManager _playerManager;
     public InputActionReference moveAction;
+    public InputActionReference attackAction;
     public Vector2 direction;
     void Start()
     {
-        playerInput = GetComponent<PlayerInput>();
-        playerManager = GetComponent<PlayerManager>();
+        _playerInput = GetComponent<PlayerInput>();
+        _playerManager = GetComponent<PlayerManager>();
     }
 
     void Update()
     {
         direction = moveAction.action.ReadValue<Vector2>();
-
         if (direction.normalized == Vector2.zero)
-            playerManager.SetWalking(false);
+            _playerManager.SetWalking(false);
         else
-            playerManager.SetWalking(true);
+            _playerManager.SetWalking(true);
+        
     }
 
 }

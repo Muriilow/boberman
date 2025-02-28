@@ -149,6 +149,34 @@ public partial class @Controls: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": true
                 }
             ]
+        },
+        {
+            ""name"": ""Attack"",
+            ""id"": ""f0e25761-7ad3-43a5-851a-63e3395bdec0"",
+            ""actions"": [
+                {
+                    ""name"": ""SpawnBomb"",
+                    ""type"": ""Button"",
+                    ""id"": ""db2f8a99-bb18-4fe2-b8cf-b278f7e726ce"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": ""Tap"",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""dfd77929-4c56-4789-8c47-a483efe243bf"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": ""Tap"",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SpawnBomb"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
         }
     ],
     ""controlSchemes"": []
@@ -156,6 +184,9 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         // Movement
         m_Movement = asset.FindActionMap("Movement", throwIfNotFound: true);
         m_Movement_Move = m_Movement.FindAction("Move", throwIfNotFound: true);
+        // Attack
+        m_Attack = asset.FindActionMap("Attack", throwIfNotFound: true);
+        m_Attack_SpawnBomb = m_Attack.FindAction("SpawnBomb", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -259,8 +290,58 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         }
     }
     public MovementActions @Movement => new MovementActions(this);
+
+    // Attack
+    private readonly InputActionMap m_Attack;
+    private List<IAttackActions> m_AttackActionsCallbackInterfaces = new List<IAttackActions>();
+    private readonly InputAction m_Attack_SpawnBomb;
+    public struct AttackActions
+    {
+        private @Controls m_Wrapper;
+        public AttackActions(@Controls wrapper) { m_Wrapper = wrapper; }
+        public InputAction @SpawnBomb => m_Wrapper.m_Attack_SpawnBomb;
+        public InputActionMap Get() { return m_Wrapper.m_Attack; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(AttackActions set) { return set.Get(); }
+        public void AddCallbacks(IAttackActions instance)
+        {
+            if (instance == null || m_Wrapper.m_AttackActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_AttackActionsCallbackInterfaces.Add(instance);
+            @SpawnBomb.started += instance.OnSpawnBomb;
+            @SpawnBomb.performed += instance.OnSpawnBomb;
+            @SpawnBomb.canceled += instance.OnSpawnBomb;
+        }
+
+        private void UnregisterCallbacks(IAttackActions instance)
+        {
+            @SpawnBomb.started -= instance.OnSpawnBomb;
+            @SpawnBomb.performed -= instance.OnSpawnBomb;
+            @SpawnBomb.canceled -= instance.OnSpawnBomb;
+        }
+
+        public void RemoveCallbacks(IAttackActions instance)
+        {
+            if (m_Wrapper.m_AttackActionsCallbackInterfaces.Remove(instance))
+                UnregisterCallbacks(instance);
+        }
+
+        public void SetCallbacks(IAttackActions instance)
+        {
+            foreach (var item in m_Wrapper.m_AttackActionsCallbackInterfaces)
+                UnregisterCallbacks(item);
+            m_Wrapper.m_AttackActionsCallbackInterfaces.Clear();
+            AddCallbacks(instance);
+        }
+    }
+    public AttackActions @Attack => new AttackActions(this);
     public interface IMovementActions
     {
         void OnMove(InputAction.CallbackContext context);
+    }
+    public interface IAttackActions
+    {
+        void OnSpawnBomb(InputAction.CallbackContext context);
     }
 }

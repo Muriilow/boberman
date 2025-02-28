@@ -3,27 +3,28 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 public class PlayerManager : NetworkBehaviour, IDamageable
 {
-    public SpawnManager SpawnManagerRef { get; private set; }
-    public Animator PlayerAnimator { get; private set; }
-    public AnimationClip DyingAnimation { get; private set; }
-    public PlayerMovement PlayerMovement { get; private set; }
-    public PlayerInputSystem PlayerInput { get; private set; }
+    private SpawnManager _spawnManagerRef;
+    private Animator _playerAnimator;
+    private AnimationClip _dyingAnimation;
+    private PlayerMovement _playerMovement;
+    private PlayerInputSystem _playerInput;
+    public PlayerBomb playerBomb;
 
-    public StateMachine<PlayerState> StateMachine { get; set; }
-    //public PlayerAttackState AttackState { get; set; }
-    public PlayerIdleState IdleState { get; set; }
-    public PlayerWalkingState WalkingState { get; set; }
+    private StateMachine<PlayerState> _stateMachine;
+    public PlayerIdleState IdleState { get; private set; }
+    public PlayerWalkingState WalkingState { get; private set; }
     public PlayerAttackingState AttackingState { get; set; }
     public PlayerDieState DieState { get; set; }
 
     public float MaxHealth { get; set; }
     public float CurrentHealth { get; set; }
 
-    public bool IsWalking { get; set; }
-    public bool IsAtacking { get; set; }
+    public bool IsWalking { get; private set; }
+    public bool IsAttacking { get; set; }
 
     public string CurrentState { get; private set; }
 
@@ -31,16 +32,16 @@ public class PlayerManager : NetworkBehaviour, IDamageable
     {
         MaxHealth = 1;
         CurrentHealth = MaxHealth;
-        SpawnManagerRef = FindFirstObjectByType<SpawnManager>();
-        PlayerAnimator = GetComponent<Animator>();
-        PlayerMovement = GetComponent<PlayerMovement>();
-        PlayerInput = GetComponent<PlayerInputSystem>();
-        StateMachine = new StateMachine<PlayerState>();
+        _spawnManagerRef = FindFirstObjectByType<SpawnManager>();
+        _playerAnimator = GetComponent<Animator>();
+        _playerMovement = GetComponent<PlayerMovement>();
+        _playerInput = GetComponent<PlayerInputSystem>();
+        _stateMachine = new StateMachine<PlayerState>();
 
-        IdleState = new PlayerIdleState(this, PlayerMovement, PlayerInput, StateMachine, PlayerAnimator);
-        WalkingState = new PlayerWalkingState(this, PlayerMovement, PlayerInput, StateMachine, PlayerAnimator);
-        AttackingState = new PlayerAttackingState(this, PlayerMovement, PlayerInput, StateMachine, PlayerAnimator);
-        DieState = new PlayerDieState(this, PlayerMovement, PlayerInput, StateMachine, PlayerAnimator);
+        IdleState = new PlayerIdleState(this, _playerMovement, _playerInput, _stateMachine, _playerAnimator);
+        WalkingState = new PlayerWalkingState(this, _playerMovement, _playerInput, _stateMachine, _playerAnimator);
+        AttackingState = new PlayerAttackingState(this, _playerMovement, _playerInput, _stateMachine, _playerAnimator);
+        DieState = new PlayerDieState(this, _playerMovement, _playerInput, _stateMachine, _playerAnimator);
     }
 
     public override void OnNetworkSpawn()
@@ -48,31 +49,30 @@ public class PlayerManager : NetworkBehaviour, IDamageable
 
         base.OnNetworkSpawn();
 
-        StateMachine.Initialize(IdleState);
+        _stateMachine.Initialize(IdleState);
         SpawnPlayerServerRpc();
     }
 
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
         if (!IsOwner)
             return;
 
-        StateMachine.CurrentState.FrameUpdate();
+        _stateMachine.CurrentState.FrameUpdate();
     }
-    void FixedUpdate()
+    private void FixedUpdate()
     {
         if (!IsOwner)
             return;
 
-        StateMachine.CurrentState.PhysicsUpdate();
+        _stateMachine.CurrentState.PhysicsUpdate();
     }
 
     [Rpc(SendTo.Server)]
     private void SpawnPlayerServerRpc()
     {
-        Vector3Int spawnPoint = SpawnManagerRef.GetSpawnPoint();
+        Vector3Int spawnPoint = _spawnManagerRef.GetSpawnPoint();
         transform.position = spawnPoint;
     }
 
@@ -89,7 +89,7 @@ public class PlayerManager : NetworkBehaviour, IDamageable
         CurrentHealth -= damageAmount;
         if (CurrentHealth <= 0f)
         {
-            StateMachine.ChangeState(DieState);
+            _stateMachine.ChangeState(DieState);
         }
     }
 
@@ -103,12 +103,10 @@ public class PlayerManager : NetworkBehaviour, IDamageable
     #region Animation Triggers
     public void AnimationTriggerEvent(string newState)
     {
-        if (!IsOwner)
-            return;
-        if (CurrentState == newState)
+        if (!IsOwner || CurrentState == newState)
             return;
 
-        PlayerAnimator.Play(newState);
+        _playerAnimator.Play(newState);
 
         CurrentState = newState;
     }

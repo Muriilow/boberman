@@ -127,6 +127,34 @@
                     "isPartOfComposite": true
                 }
             ]
+        },
+        {
+            "name": "Attack",
+            "id": "f0e25761-7ad3-43a5-851a-63e3395bdec0",
+            "actions": [
+                {
+                    "name": "SpawnBomb",
+                    "type": "Button",
+                    "id": "db2f8a99-bb18-4fe2-b8cf-b278f7e726ce",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "Tap",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "dfd77929-4c56-4789-8c47-a483efe243bf",
+                    "path": "<Keyboard>/space",
+                    "interactions": "Tap",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SpawnBomb",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
         }
     ],
     "controlSchemes": []

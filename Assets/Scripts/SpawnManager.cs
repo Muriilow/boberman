@@ -33,5 +33,9 @@ public class SpawnManager : NetworkBehaviour
 
     }
 
+    public override void OnNetworkSpawn()
+    {
+        //GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);
+    }
     public Vector3Int GetSpawnPoint() => spawnPoints.Pop();
 }
