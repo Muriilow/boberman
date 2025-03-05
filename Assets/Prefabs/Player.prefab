@@ -77,6 +77,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 770fdf95f9f527f4aa6bb6a8daaa92b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerBomb: {fileID: 0}
 --- !u!114 &392778862230351129
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -90,6 +91,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveAction: {fileID: 521827525468798969, guid: 4f03ca3e35c0f9444b82e448b891b40e, type: 3}
+  attackAction: {fileID: -2160487624054253325, guid: 4f03ca3e35c0f9444b82e448b891b40e, type: 3}
   direction: {x: 0, y: 0}
 --- !u!114 &8434236588927068489
 MonoBehaviour:
@@ -105,11 +107,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 5
   maxMoveSpeed: 12
-  rigidBody: {fileID: -4774130975421435273}
+  _rigidBody: {fileID: -4774130975421435273}
   playerInput: {fileID: 392778862230351129}
   direction: {x: 0, y: 0}
-  reconciliationThreshold: 10
-  reconciliationCooldownTime: 1
 --- !u!114 &8537359618410290985
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -214,20 +214,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81522d19308901b4babd7a896905b115, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  canPlaceBomb: 0
   _bombPrefab: {fileID: 8442374029692332420, guid: a317c3e02e309ff40a53592fbcd4dd55, type: 3}
-  _bombFuseTime: 0
   _bombsRemaining:
     m_InternalValue: 1
-  _bombAmount:
-    m_InternalValue: 0
+  _bombAmount: 0
   _maxBombAmount: 0
-  _explosionStartPrefab: {fileID: 2203190960442850925, guid: 10ce69ec530a0a1498327fc19787110c, type: 3}
-  _explosionMiddlePrefab: {fileID: 6459205583992980324, guid: 2bfd3c98c10f10744b2f4812d40663ef, type: 3}
-  _explosionEndPrefab: {fileID: 5085938049071433517, guid: a7d7d60b5929f104dbe426cfb8f920e6, type: 3}
-  _indestructibleLayer:
-    serializedVersion: 2
-    m_Bits: 64
   _explosionRadius:
     m_InternalValue: 1
   _maxRadius: 0

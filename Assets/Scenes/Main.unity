@@ -4285,15 +4285,11 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5221767922051902350, guid: d74ffb41cd59143408bf455222c72ffe, type: 3}
-      propertyPath: _wall
-      value: 
-      objectReference: {fileID: 1772989247244180738, guid: e1a36d32e329ea24d9b87de69e169df6, type: 3}
-    - target: {fileID: 5221767922051902350, guid: d74ffb41cd59143408bf455222c72ffe, type: 3}
       propertyPath: _tileMap
       value: 
       objectReference: {fileID: 2021426883}
     - target: {fileID: 5221767922051902350, guid: d74ffb41cd59143408bf455222c72ffe, type: 3}
-      propertyPath: wallsParent
+      propertyPath: _wallsParent
       value: 
       objectReference: {fileID: 183473528}
     - target: {fileID: 5221767922051902350, guid: d74ffb41cd59143408bf455222c72ffe, type: 3}
@@ -4308,10 +4304,6 @@ PrefabInstance:
       propertyPath: _isUsableParent
       value: 
       objectReference: {fileID: 785197565}
-    - target: {fileID: 5221767922051902350, guid: d74ffb41cd59143408bf455222c72ffe, type: 3}
-      propertyPath: _spawnBoundariesTile
-      value: 
-      objectReference: {fileID: 11400000, guid: 793a69c76a1de4146ad1e1290cf004e1, type: 2}
     - target: {fileID: 5566182743916336690, guid: d74ffb41cd59143408bf455222c72ffe, type: 3}
       propertyPath: m_Name
       value: GameManager

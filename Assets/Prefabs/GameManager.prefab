@@ -66,11 +66,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f205c4d1cf598fc42b995ff6d0ba147b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  wallsParent: {fileID: 0}
-  wall: {fileID: 1772989247244180738, guid: e1a36d32e329ea24d9b87de69e169df6, type: 3}
+  _wallsParent: {fileID: 0}
+  _wall: {fileID: 1772989247244180738, guid: e1a36d32e329ea24d9b87de69e169df6, type: 3}
   _tileMap: {fileID: 0}
   _spawnTile: {fileID: 11400000, guid: 12183b9d42e53e24ebea4a829758739e, type: 2}
-  _spawnBoundariesTile: {fileID: 0}
+  _spawnBoundariesTile: {fileID: 11400000, guid: 793a69c76a1de4146ad1e1290cf004e1, type: 2}
   _ground:
   - {fileID: 11400000, guid: 1b79d9cad98d1d24e8915006004f75ff, type: 2}
   - {fileID: 11400000, guid: 569e6a8506543c74c8224048477828c1, type: 2}
@@ -83,6 +83,6 @@ MonoBehaviour:
   _isUsableParent: {fileID: 0}
   _hasWallParent: {fileID: 0}
   _hasBombParent: {fileID: 0}
-  _speedPW: {fileID: 11400000, guid: 22f384987299d49489b981bf57781100, type: 2}
-  _blastPW: {fileID: 11400000, guid: 587849dc67994f446b634c4e25b0c102, type: 2}
-  _bombPW: {fileID: 11400000, guid: 44d4aa547b3b3084b845b83f3ddabfba, type: 2}
+  _speedPw: {fileID: 11400000, guid: 22f384987299d49489b981bf57781100, type: 2}
+  _blastPw: {fileID: 11400000, guid: 587849dc67994f446b634c4e25b0c102, type: 2}
+  _bombPw: {fileID: 11400000, guid: 44d4aa547b3b3084b845b83f3ddabfba, type: 2}
