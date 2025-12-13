@@ -47,9 +47,7 @@ public class ManageDrops : NetworkBehaviour
         _size = _tileMap.size;
 
         //Maybe revert this to a normal grid class?
-        _bombs = new NetworkVariable<GridStruct>(new GridStruct(_size.x, _size.y),
-                                                NetworkVariableReadPermission.Everyone,
-                                                NetworkVariableWritePermission.Server); 
+        _bombs = new NetworkVariable<GridStruct>(new GridStruct(_size.x, _size.y)); 
 
         _walls = new Grid<BackgroundTile>(_size.x, _size.y);
 
@@ -66,11 +64,11 @@ public class ManageDrops : NetworkBehaviour
         if (!IsServer)
             return;
 
-        for (var i = 0; i < _size.x - 1; i++) // really don't know why I need to subtract 1
+        for (var i = 0; i < _size.x - 1; i++)
             for (var j = 0; j < _size.y; j++)
             {
-                var wallChances = UnityEngine.Random.Range(0f, 1f);
-                var powerUpChances = UnityEngine.Random.Range(0f, 1f);
+                var wallChances = Random.Range(0f, 1f);
+                var powerUpChances = Random.Range(0f, 1f);
 
                 var pos = new Vector3Int(i + origin.x, j + origin.y, origin.z);
 
@@ -122,7 +120,7 @@ public class ManageDrops : NetworkBehaviour
         if (item == null)
             return;
 
-        var powerUp = Instantiate(item, pos, Quaternion.identity); //Creating the superpowers
+        var powerUp = Instantiate(item, pos, Quaternion.identity);
         powerUp.GetComponent<NetworkObject>().Spawn(true);
     }
 
@@ -131,7 +129,7 @@ public class ManageDrops : NetworkBehaviour
         if (chance >= _powerUpPercentage)
             return null;
 
-        var index = UnityEngine.Random.Range(0, 3);
+        var index = Random.Range(0, 3);
         switch (index)
         {
             case 0:
@@ -171,7 +169,7 @@ public class ManageDrops : NetworkBehaviour
             }
     }
 
-    private bool UsableTile(Vector3Int pos) //Should this tile be usable?
+    private bool UsableTile(Vector3Int pos)
     {
         var tile = _tileMap.GetTile(pos) as Tile;
 
@@ -183,7 +181,7 @@ public class ManageDrops : NetworkBehaviour
         var tile = _tileMap.GetTile(pos) as Tile;
 
 
-        if (tile == _spawnTile || tile == _spawnBoundariesTile) //check if this is spawn TODO!!!
+        if (tile == _spawnTile || tile == _spawnBoundariesTile)
             return false;
 
         return _ground.Any(t => tile == t);

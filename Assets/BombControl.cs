@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -89,7 +87,7 @@ public class BombControl : NetworkBehaviour
         _manageDrops.UpdateTextBomb(false, x, y);
 
         _playerBomb.GetBombServerRpc();
-        GetComponent<NetworkObject>().Despawn(true);
+        GetComponent<NetworkObject>().Despawn();
     }
 
     private void OnTriggerExit2D(Collider2D collision)
