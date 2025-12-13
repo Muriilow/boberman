@@ -299,5 +299,5 @@ MonoBehaviour:
   _manageDrops: {fileID: 5221767922051902350, guid: d74ffb41cd59143408bf455222c72ffe, type: 3}
   _playerBomb: {fileID: -3558616741636204773, guid: 0ef0d8ace931cff45923bd44a49e5175, type: 3}
   _explosionRadius: 0
-  _bombFuseTime: 0
+  _bombFuseTime: 3
   _initialPos: {x: 0, y: 0}

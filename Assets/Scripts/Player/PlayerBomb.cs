@@ -1,9 +1,6 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
-using Utilities;
+
 public class PlayerBomb : NetworkBehaviour
 {
     [Header("Bomb")]
@@ -24,8 +21,8 @@ public class PlayerBomb : NetworkBehaviour
     {
         _manageDrops = ManageDrops.Instance;
 
-        _explosionRadius = new NetworkVariable<int>(1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-        _bombsRemaining = new NetworkVariable<int>(1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        _explosionRadius = new NetworkVariable<int>(1);
+        _bombsRemaining = new NetworkVariable<int>(1);
 
         _bombAmount = 1;
         _maxBombAmount = 6;
@@ -50,20 +47,20 @@ public class PlayerBomb : NetworkBehaviour
     [Rpc(SendTo.Server)]
     private void CanPlaceBombServerRpc(bool hasPressedAttack, Vector2 position)
     {
-        (int x, int y) = Utilities.Convert.PositionToGrid(position, _manageDrops.origin);
+        var (x, y) = Utilities.Convert.PositionToGrid(position, _manageDrops.origin);
 
-        bool hasBomb = _manageDrops.CheckBombs(x, y);
+        var hasBomb = _manageDrops.CheckBombs(x, y);
 
         if (_bombsRemaining.Value > 0 && hasPressedAttack && !hasBomb)
             SpawnBombServerRpc(position, x, y);
     }
 
     [Rpc(SendTo.Server)]
-    public void SpawnBombServerRpc(Vector2 position, int x, int y)
+    private void SpawnBombServerRpc(Vector2 position, int x, int y)
     {
-        GameObject bomb = Instantiate(_bombPrefab, position, Quaternion.identity);
+        var bomb = Instantiate(_bombPrefab, position, Quaternion.identity);
         bomb.GetComponent<NetworkObject>().Spawn(true);
-        bomb.GetComponent<BombControl>().Initalize(_explosionRadius.Value, this, position);
+        bomb.GetComponent<BombControl>().Initialize(_explosionRadius.Value, this, position);
 
         _bombsRemaining.Value--;
 
@@ -75,7 +72,7 @@ public class PlayerBomb : NetworkBehaviour
 
     #region Upgrades
     [Rpc(SendTo.Server)]
-    public void AddBombServerRpc(int amount)
+    private void AddBombServerRpc(int amount)
     {
         if (_bombAmount < _maxBombAmount)
         {
@@ -93,7 +90,7 @@ public class PlayerBomb : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server)]
-    public void AddRadiusServerRpc(int amount)
+    private void AddRadiusServerRpc(int amount)
     {
         if (_explosionRadius.Value + amount < _maxRadius)
             _explosionRadius.Value += amount;
@@ -128,13 +125,5 @@ public class PlayerBomb : NetworkBehaviour
                 break;
             }
         }
-    }
-
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        //if(collision.gameObject.tag == "Bomb")
-        //{
-            //Maybe A placeholder idk
-        //}
     }
 }

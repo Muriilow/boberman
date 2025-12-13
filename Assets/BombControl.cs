@@ -13,15 +13,14 @@ public class BombControl : NetworkBehaviour
     [SerializeField] private PlayerBomb _playerBomb;
 
     [SerializeField] private int _explosionRadius;
-    [SerializeField] private float _bombFuseTime;
+    [SerializeField] private float _bombFuseTime = 3f;
     [SerializeField] private Vector2 _initialPos;
     private void Awake()
     {
-        _bombFuseTime = 3f;
         _manageDrops = ManageDrops.Instance;
     }
 
-    public void Initalize(int explosionRadius, PlayerBomb playerBomb, Vector2 position)
+    public void Initialize(int explosionRadius, PlayerBomb playerBomb, Vector2 position)
     {
         _explosionRadius = explosionRadius;
         _playerBomb = playerBomb;
@@ -43,7 +42,7 @@ public class BombControl : NetworkBehaviour
     [Rpc(SendTo.Server)]
     private void StartExplosionServerRpc()
     {
-        Explosion explosion = Instantiate(_explosionStartPrefab, transform.position, Quaternion.identity);
+        var explosion = Instantiate(_explosionStartPrefab, transform.position, Quaternion.identity);
         explosion.GetComponent<NetworkObject>().Spawn(true);
 
         ExplodeServerRpc(transform.position, Vector2.up, _explosionRadius);
@@ -53,26 +52,26 @@ public class BombControl : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server)]
-    private void ExplodeServerRpc(Vector2 position, Vector2 direction, int length) //Recursive function to continue exploding in one direction 
+    private void ExplodeServerRpc(Vector2 position, Vector2 direction, int length)
     {
-        if (length <= 0) //Has the explosion length? 
+        if (length < 1)
             return;
 
         position += direction;
 
-        (var x, var y) = Utilities.Convert.PositionToGrid(position, _manageDrops.origin);
+        var (x, y) = Utilities.Convert.PositionToGrid(position, _manageDrops.origin);
 
-        //Instead of checking for collisions we check the multidimensional array created by the wallManager
-        if (_manageDrops.CheckForUsableTiles(x, y)) //Did the explosion run into a unbreakable wall?
+        if (_manageDrops.CheckForUsableTiles(x, y))
             return;
 
-        if (_manageDrops.CheckForWalls(x, y)) //Did the explosion run into a normal wall? 
+        if (_manageDrops.CheckForWalls(x, y)) 
         {
             _manageDrops.RemoveWalls(position);
             return;
         }
 
-        Explosion explosion = Instantiate(length > 1 ? _explosionMiddlePrefab : _explosionEndPrefab, position, Quaternion.identity);
+        var isLast = length > 1 ? _explosionMiddlePrefab : _explosionEndPrefab; 
+        var explosion = Instantiate(isLast, position, Quaternion.identity);
         explosion.GetComponent<NetworkObject>().Spawn(true);
         explosion.SetDirectionClientRpc(direction);
 
@@ -84,7 +83,7 @@ public class BombControl : NetworkBehaviour
     [Rpc(SendTo.Server)]
     private void DestroyBombServerRpc()
     {
-        (var x, var y) = Utilities.Convert.PositionToGrid(transform.position, _manageDrops.origin);
+        var (x, y) = Utilities.Convert.PositionToGrid(transform.position, _manageDrops.origin);
 
         _manageDrops.UpdateGridBomb(false, x, y);
         _manageDrops.UpdateTextBomb(false, x, y);
@@ -95,9 +94,7 @@ public class BombControl : NetworkBehaviour
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        if(collision.tag == "Player")
-        {
+        if(collision.CompareTag("Player"))
             GetComponent<CircleCollider2D>().isTrigger = false;
-        }
     }
 }
