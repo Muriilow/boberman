@@ -11,6 +11,7 @@ using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using Unity.Services.Relay;
 using UnityEngine;
+using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
 public class MatchMaker : MonoBehaviour
@@ -21,13 +22,15 @@ public class MatchMaker : MonoBehaviour
     public string id;
     public string lobbyName = "Lobby";
     public string joinKey = "j";
+    [SerializeField] private TMP_InputField code;
     public static string PlayerId { get; private set; }
     
-    public void Host()
+     public void Host()
     {
-        NetworkManager.Singleton.StartHost();
+        CreateLobby();
         updateText.text = "I am host";
     }
+
 
     public void Join()
     {
@@ -42,7 +45,7 @@ public class MatchMaker : MonoBehaviour
 
         await Login();
 
-        //CreateLobby();
+        CreateLobby();
     }
 
     private async void CreateLobby()
@@ -63,7 +66,7 @@ public class MatchMaker : MonoBehaviour
             };
             
             var lobby = await Lobbies.Instance.CreateLobbyAsync(lobbyName, maxPlayers, options);
-            
+             
             _transport.SetHostRelayData(a.RelayServer.IpV4, (ushort)a.RelayServer.Port, a.AllocationIdBytes, a.Key, a.ConnectionData);
 
             id = lobby.Id;
@@ -71,6 +74,7 @@ public class MatchMaker : MonoBehaviour
             
             NetworkManager.Singleton.StartHost();
             updateText.text = "I am lobby Host";
+            Debug.Log(lobby.LobbyCode);
         }
         catch (Exception e)
         {
@@ -107,6 +111,17 @@ public class MatchMaker : MonoBehaviour
         }
     }
 
+    public async void JoinLobbyByCode()
+    {
+        try
+        {
+            Lobby joinedLobby = await LobbyService.Instance.JoinLobbyByCodeAsync(code.text);
+        }
+        catch (LobbyServiceException e)
+        {
+            Debug.Log(e);
+        }
+    }
     private void OnDestroy()
     {
         try

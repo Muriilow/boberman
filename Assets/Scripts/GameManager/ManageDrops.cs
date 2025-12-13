@@ -1,7 +1,6 @@
-using System;
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.Tilemaps;
 using Utilities;
 
@@ -37,7 +36,7 @@ public class ManageDrops : NetworkBehaviour
     private TextMesh[,] _hasWall;
     private TextMesh[,] _hasBomb;
 
-    [Header("Itens")]
+    [Header("Items")]
     [SerializeField] private Speed _speedPw;
     [SerializeField] private Blast _blastPw;
     [SerializeField] private Bomb _bombPw;
@@ -67,13 +66,13 @@ public class ManageDrops : NetworkBehaviour
         if (!IsServer)
             return;
 
-        for (int i = 0; i < _size.x - 1; i++) // really don't know why I need to subtract 1
-            for (int j = 0; j < _size.y; j++)
+        for (var i = 0; i < _size.x - 1; i++) // really don't know why I need to subtract 1
+            for (var j = 0; j < _size.y; j++)
             {
-                float wallChances = UnityEngine.Random.Range(0f, 1f);
-                float powerUpChances = UnityEngine.Random.Range(0f, 1f);
+                var wallChances = UnityEngine.Random.Range(0f, 1f);
+                var powerUpChances = UnityEngine.Random.Range(0f, 1f);
 
-                Vector3Int pos = new Vector3Int(i + origin.x, j + origin.y, origin.z);
+                var pos = new Vector3Int(i + origin.x, j + origin.y, origin.z);
 
                 if (CanCreateWall(i, j, pos, wallChances))
                 {
@@ -107,11 +106,11 @@ public class ManageDrops : NetworkBehaviour
         if (!IsServer)
             return;
 
-        int x = (int)pos.x - origin.x;
-        int y = (int)pos.y - origin.y;
+        var x = (int)pos.x - origin.x;
+        var y = (int)pos.y - origin.y;
 
-        GameObject wall = _walls.gridArray[x, y].Wall;
-        GameObject item = _walls.gridArray[x, y].Item;
+        var wall = _walls.gridArray[x, y].Wall;
+        var item = _walls.gridArray[x, y].Item;
 
         //Activating the animation before the wall destroy
         wall.GetComponent<Animator>().SetBool("Destroy", true);
@@ -123,7 +122,7 @@ public class ManageDrops : NetworkBehaviour
         if (item == null)
             return;
 
-        GameObject powerUp = Instantiate(item, pos, Quaternion.identity); //Creating the superpowers
+        var powerUp = Instantiate(item, pos, Quaternion.identity); //Creating the superpowers
         powerUp.GetComponent<NetworkObject>().Spawn(true);
     }
 
@@ -132,7 +131,7 @@ public class ManageDrops : NetworkBehaviour
         if (chance >= _powerUpPercentage)
             return null;
 
-        int index = UnityEngine.Random.Range(0, 3);
+        var index = UnityEngine.Random.Range(0, 3);
         switch (index)
         {
             case 0:
@@ -156,10 +155,10 @@ public class ManageDrops : NetworkBehaviour
             return;
 
         //Create the tiles for all the grid, and set the isUsable variable to be true or false
-        for (int i = 0; i < _size.x - 1; i++)
-            for (int j = 0; j < _size.y; j++)
+        for (var i = 0; i < _size.x - 1; i++)
+            for (var j = 0; j < _size.y; j++)
             {
-                Vector3Int pos = new Vector3Int(i + origin.x, j + origin.y, origin.z);
+                var pos = new Vector3Int(i + origin.x, j + origin.y, origin.z);
                 _walls.gridArray[i, j] = new BackgroundTile(UsableTile(pos), false, null, null, pos.x, pos.y);
                 _bombs.Value.gridArray[i, j] = new BackgroundBomb(UsableTile(pos), false, pos.x, pos.y);
 
@@ -174,46 +173,28 @@ public class ManageDrops : NetworkBehaviour
 
     private bool UsableTile(Vector3Int pos) //Should this tile be usable?
     {
-        Tile _tile = _tileMap.GetTile(pos) as Tile;
+        var tile = _tileMap.GetTile(pos) as Tile;
 
-        for (int i = 0; i < _indestructible.Length; i++)
-            if (_tile == _indestructible[i])
-                return false;
-
-        return true;
+        return _indestructible.All(t => tile != t);
     }
 
     private bool CheckTile(Vector3Int pos)
     {
-        Tile tile = _tileMap.GetTile(pos) as Tile;
+        var tile = _tileMap.GetTile(pos) as Tile;
 
 
         if (tile == _spawnTile || tile == _spawnBoundariesTile) //check if this is spawn TODO!!!
             return false;
 
-        for (int i = 0; i < _ground.Length; i++)
-            if (tile == _ground[i]) //Check if this is ground
-                return true;
-
-        return false;
+        return _ground.Any(t => tile == t);
     }
     #endregion
 
     #region UpdateDebug
-    public void UpdateTextBomb(bool hasPlace, int x, int y)
-    {
-        if (hasPlace)
-            _hasBomb[x, y].text = "1";
-        else
-            _hasBomb[x, y].text = "0";
-    }
-    public void UpdateTextWall(bool hasPlace, int x, int y)
-    {
-        if (hasPlace)
-            _hasWall[x, y].text = "1";
-        else
-            _hasWall[x, y].text = "0";
-    }
+    public void UpdateTextBomb(bool hasPlace, int x, int y) => _hasBomb[x, y].text = hasPlace ? "1" : "0";
+
+    private void UpdateTextWall(bool hasPlace, int x, int y) => _hasWall[x, y].text = hasPlace ? "1" : "0";
+
     #endregion
 
     #region UpdateGrid
@@ -221,7 +202,8 @@ public class ManageDrops : NetworkBehaviour
     {
         _bombs.Value.gridArray[x, y].hasBomb = hasBomb;
     }
-    public void UpdateGridWall(bool hasWall, GameObject wall, int x, int y)
+
+    private void UpdateGridWall(bool hasWall, GameObject wall, int x, int y)
     {
         _walls.gridArray[x, y].HasWall = hasWall;
         _walls.gridArray[x, y].Wall = wall;

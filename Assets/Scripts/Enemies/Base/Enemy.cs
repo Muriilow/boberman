@@ -97,7 +97,7 @@ public class Enemy : MonoBehaviour, IDamageable, IEnemyMoveable, ITriggerCheckab
     #region EnemyMoveable
     public void MoveEnemy(Vector2 velocity)
     {
-        Rigidbody.velocity = velocity;
+        Rigidbody.linearVelocity = velocity;
         CheckForLeftOrRightFacing(velocity);
     }
     public void CheckForLeftOrRightFacing(Vector2 velocity)

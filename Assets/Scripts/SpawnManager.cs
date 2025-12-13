@@ -11,6 +11,8 @@ public class SpawnManager : NetworkBehaviour
     [SerializeField] private Tilemap tileMap;
     [SerializeField] private Tile spawnTile;
     public Stack<Vector3Int> spawnPoints = new Stack<Vector3Int>();
+    [SerializeField] private GameObject playerPrefab;
+    
 
     //Get all the tiles in the tilemap and save the spawnpoints tile into a list
     private void Awake()
@@ -33,9 +35,7 @@ public class SpawnManager : NetworkBehaviour
 
     }
 
-    public override void OnNetworkSpawn()
-    {
-        //GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);
-    }
+
+
     public Vector3Int GetSpawnPoint() => spawnPoints.Pop();
 }

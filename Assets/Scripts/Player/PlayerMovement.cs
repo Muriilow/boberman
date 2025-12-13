@@ -27,7 +27,7 @@ public class PlayerMovement : NetworkBehaviour
     #region Basic Movement
     private void Move(Vector3 input)
     {
-        _rigidBody.velocity = input * moveSpeed;
+        _rigidBody.linearVelocity = input * moveSpeed;
     }
     private bool CanMove(Vector3 input)
     {

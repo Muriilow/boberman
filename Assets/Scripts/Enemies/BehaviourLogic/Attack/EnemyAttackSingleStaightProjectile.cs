@@ -39,7 +39,7 @@ public class EnemyAttackSingleStaightProjectile : EnemyAttackSOBase
             Vector2 dir = (playerTransform.position - enemy.transform.position).normalized;
 
             Rigidbody2D bullet = GameObject.Instantiate(bulletPrefab, enemy.transform.position, Quaternion.identity);
-            bullet.velocity = dir * bulletSpeed;
+            bullet.linearVelocity = dir * bulletSpeed;
         }
 
         if (Vector2.Distance(playerTransform.position, enemy.transform.position) > _distanceToCountExit)

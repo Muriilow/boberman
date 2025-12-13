@@ -58,6 +58,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GlobalObjectIdHash: 493387398
   InScenePlacedSourceGlobalObjectIdHash: 493387398
+  DeferredDespawnTick: 0
+  Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
@@ -65,6 +67,8 @@ MonoBehaviour:
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
 --- !u!114 &-5929866767903619944
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -77,7 +81,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 770fdf95f9f527f4aa6bb6a8daaa92b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerBomb: {fileID: 0}
+  ShowTopMostFoldoutHeaderGroup: 1
+  playerBomb: {fileID: -3558616741636204773}
 --- !u!114 &392778862230351129
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -105,6 +110,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0fd6ed1796e23e842bc6ca573a6e408b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   moveSpeed: 5
   maxMoveSpeed: 12
   _rigidBody: {fileID: -4774130975421435273}
@@ -142,7 +148,7 @@ MonoBehaviour:
   m_Camera: {fileID: 0}
 --- !u!50 &-4774130975421435273
 Rigidbody2D:
-  serializedVersion: 4
+  serializedVersion: 5
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -153,8 +159,8 @@ Rigidbody2D:
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 1
-  m_LinearDrag: 0
-  m_AngularDrag: 0.05
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
   m_GravityScale: 0
   m_Material: {fileID: 6200000, guid: 4a55f6e7b64bf1d4c812f9623944c0e6, type: 2}
   m_IncludeLayers:
@@ -175,6 +181,7 @@ CircleCollider2D:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8998316997674671113}
   m_Enabled: 1
+  serializedVersion: 3
   m_Density: 1
   m_Material: {fileID: 6200000, guid: 4a55f6e7b64bf1d4c812f9623944c0e6, type: 2}
   m_IncludeLayers:
@@ -198,9 +205,9 @@ CircleCollider2D:
     m_Bits: 4294967295
   m_IsTrigger: 0
   m_UsedByEffector: 0
-  m_UsedByComposite: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
   m_Offset: {x: 0, y: -0.23}
-  serializedVersion: 2
   m_Radius: 0.28
 --- !u!114 &-3558616741636204773
 MonoBehaviour:
@@ -214,6 +221,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81522d19308901b4babd7a896905b115, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   _bombPrefab: {fileID: 8442374029692332420, guid: a317c3e02e309ff40a53592fbcd4dd55, type: 3}
   _bombsRemaining:
     m_InternalValue: 1
@@ -222,10 +230,10 @@ MonoBehaviour:
   _explosionRadius:
     m_InternalValue: 1
   _maxRadius: 0
-  _manageDrops: {fileID: 0}
+  _manageDrops: {fileID: 5221767922051902350, guid: d74ffb41cd59143408bf455222c72ffe, type: 3}
 --- !u!95 &4105202253582284458
 Animator:
-  serializedVersion: 5
+  serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -239,6 +247,7 @@ Animator:
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
@@ -246,6 +255,7 @@ Animator:
   m_WriteDefaultValuesOnDisable: 0
 --- !u!212 &6407777508758626423
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -261,6 +271,11 @@ SpriteRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -282,9 +297,11 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: -1151522483
   m_SortingLayer: 5
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_Sprite: {fileID: -1174024930709599545, guid: 131fd62ecd3e3d24699ac2e4e38ee3b7, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -294,7 +311,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!114 &-6647346281511208072
 MonoBehaviour:
@@ -308,6 +324,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 548bc73f541df954389928175e3d03fb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   TransitionStateInfoList: []
   m_Animator: {fileID: 4105202253582284458}
 --- !u!114 &-8090500922633111413
@@ -322,6 +339,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0d889db27804635ada6f9fa36c8e9ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  NetworkTransformExpanded: 0
+  AutoOwnerAuthorityTickOffset: 1
+  PositionInterpolationType: 0
+  RotationInterpolationType: 0
+  ScaleInterpolationType: 0
+  PositionLerpSmoothing: 1
+  PositionMaxInterpolationTime: 0.1
+  RotationLerpSmoothing: 1
+  RotationMaxInterpolationTime: 0.1
+  ScaleLerpSmoothing: 1
+  ScaleMaxInterpolationTime: 0.1
+  AuthorityMode: 0
+  TickSyncChildren: 0
   UseUnreliableDeltas: 0
   SyncPositionX: 1
   SyncPositionY: 1
@@ -339,6 +370,7 @@ MonoBehaviour:
   UseQuaternionCompression: 0
   UseHalfFloatPrecision: 0
   InLocalSpace: 0
+  SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
 --- !u!114 &3766477041928277001
@@ -353,3 +385,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80d7c879794dfda4687da0e400131852, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  NetworkRigidbodyBaseExpanded: 0
+  UseRigidBodyForMotion: 0
+  AutoUpdateKinematicState: 1
+  AutoSetKinematicOnDespawn: 1
