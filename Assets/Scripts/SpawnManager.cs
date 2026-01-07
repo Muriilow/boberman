@@ -49,7 +49,7 @@ public class SpawnManager : NetworkBehaviour
         _availableSpawns.Value = _spawnPoints.Count;
     }
 
-    public Vector3Int GetSpawnPoint()
+    public Vector3 GetSpawnPoint()
     {
         if (!_isInitialized.Value && IsServer)
         {
@@ -57,9 +57,9 @@ public class SpawnManager : NetworkBehaviour
             InitializeSpawnPoints();
             _isInitialized.Value = true;
         }
-        _availableSpawns.Value = _spawnPoints.Count;
+        _availableSpawns.Value--;
         var spawnPoint = _tileMap.CellToWorld(_spawnPoints.Pop());
-        return _spawnPoints.Pop();
+        return spawnPoint;
     }
     public bool CanSpawn() => IsServer && _isInitialized.Value &&  _availableSpawns.Value > 0;
 }
