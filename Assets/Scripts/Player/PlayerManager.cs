@@ -46,11 +46,43 @@ public class PlayerManager : NetworkBehaviour, IDamageable
 
     public override void OnNetworkSpawn()
     {
-
-        base.OnNetworkSpawn();
-
+        if (!IsOwner)
+            return;
+        
+        if (IsServer)
+            TrySpawnPlayer();
+        else  
+            RequestRespawnPlayerServerRpc();
+        
         _stateMachine.Initialize(IdleState);
+        base.OnNetworkSpawn();
+    }
+
+    [Rpc(SendTo.Server)]
+    private void RequestRespawnPlayerServerRpc()
+    {   
+        TrySpawnPlayer();
+    }
+
+    private void TrySpawnPlayer()
+    {
+        if (!_spawnManagerRef.CanSpawn())
+        {
+            StartCoroutine(RetrySpawn());
+            return;
+        }
+
         SpawnPlayerServerRpc();
+    }
+
+    private IEnumerator RetrySpawn()
+    {
+        yield return new WaitForSeconds(0.5f);
+        
+        if (IsServer)
+            TrySpawnPlayer();
+        else  
+            RequestRespawnPlayerServerRpc();
     }
 
 
@@ -68,11 +100,18 @@ public class PlayerManager : NetworkBehaviour, IDamageable
 
         _stateMachine.CurrentState.PhysicsUpdate();
     }
-
+    
     [Rpc(SendTo.Server)]
     private void SpawnPlayerServerRpc()
     {
-        Vector3Int spawnPoint = _spawnManagerRef.GetSpawnPoint();
+        Vector3 spawnPoint = _spawnManagerRef.GetSpawnPoint();
+        transform.position = spawnPoint;
+        SetPlayerPosClientRpc(spawnPoint);
+    }
+    
+    [Rpc(SendTo.ClientsAndHost)]
+    private void SetPlayerPosClientRpc(Vector3 spawnPoint)
+    {
         transform.position = spawnPoint;
     }
 
@@ -88,9 +127,7 @@ public class PlayerManager : NetworkBehaviour, IDamageable
     {
         CurrentHealth -= damageAmount;
         if (CurrentHealth <= 0f)
-        {
             _stateMachine.ChangeState(DieState);
-        }
     }
 
     [Rpc(SendTo.Server)]
