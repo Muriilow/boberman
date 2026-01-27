@@ -104,7 +104,7 @@ public class PlayerManager : NetworkBehaviour, IDamageable
     [Rpc(SendTo.Server)]
     private void SpawnPlayerServerRpc()
     {
-        Vector3 spawnPoint = _spawnManagerRef.GetSpawnPoint();
+        var spawnPoint = _spawnManagerRef.GetSpawnPoint();
         transform.position = spawnPoint;
         SetPlayerPosClientRpc(spawnPoint);
     }
