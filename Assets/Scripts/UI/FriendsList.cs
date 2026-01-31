@@ -23,6 +23,7 @@ public class FriendsList : MonoBehaviour
             Debug.Log(friend.Name);
             var newFriend = Instantiate(friendPrefab, friendsList);
             newFriend.GetComponentInChildren<TextMeshProUGUI>().text = friend.Name;
+            newFriend.GetComponentInChildren<InviteFriendButton>().steamId = friend.Id;
         }
     }
 }
