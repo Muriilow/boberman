@@ -1,5 +1,7 @@
 using UnityEngine;
 using System;
+using Steamworks;
+
 public class SteamManager : MonoBehaviour
 {
     public uint appId;
@@ -10,7 +12,7 @@ public class SteamManager : MonoBehaviour
 
         try
         {
-            Steamworks.SteamClient.Init(appId, true);
+            SteamClient.Init(appId, false);
             Debug.Log("Steamworks Initialized");
         }
         catch (Exception e)
@@ -19,11 +21,15 @@ public class SteamManager : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        SteamClient.RunCallbacks();
+    }
     private void OnApplicationQuit()
     {
         try
         {
-            Steamworks.SteamClient.Shutdown();
+            SteamClient.Shutdown();
         }
         catch (Exception e)
         {

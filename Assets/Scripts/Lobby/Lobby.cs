@@ -6,12 +6,13 @@ using Steamworks;
 using Steamworks.Data;
 using UnityEngine.Events;
 using System.Threading.Tasks;
+using TMPro;
 using UnityEngine.UIElements;
 
 public class SteamLobby : MonoBehaviour
 {
     public static Lobby currentLobby;
-
+    private bool isOwner = false;
     public UnityEvent OnLobbyCreated;
     public UnityEvent OnLobbyJoined;
     public UnityEvent OnLobbyLeave;
@@ -20,10 +21,10 @@ public class SteamLobby : MonoBehaviour
     public Transform content;
     
     public Dictionary<SteamId, GameObject> inLobby = new Dictionary<SteamId, GameObject>();
-
     private void Start()
     {
         DontDestroyOnLoad(this);
+        SteamFriends.RequestUserInformation(SteamClient.SteamId);
         SteamMatchmaking.OnLobbyCreated += OnLobbyCreatedCallback;
         SteamMatchmaking.OnLobbyEntered += OnLobbyEntered;
         SteamMatchmaking.OnLobbyMemberJoined += OnLobbyMemberJoined;
@@ -48,7 +49,7 @@ public class SteamLobby : MonoBehaviour
     private void OnLobbyMemberJoined(Lobby lobby, Friend friend)
     {
         Debug.Log($"{friend.Name} joined the lobby");
-        GameObject obj = Instantiate(InLobbyFriend, content);
+        var obj = Instantiate(InLobbyFriend, content);
         obj.GetComponentInChildren<Text>().text = friend.Name;
         //obj.GetComponentInChildren<RawImage>().texture = 
         inLobby.Add(friend.Id, obj);
@@ -78,7 +79,7 @@ public class SteamLobby : MonoBehaviour
             Debug.Log($"Failed to join lobby: {joinedLobbySuccess}");
             return;
         }
-        
+         
         currentLobby = lobby;
     }
 
@@ -89,7 +90,7 @@ public class SteamLobby : MonoBehaviour
             Debug.Log("Lobby creation failed: " + result);
             return;
         }
-        
+
         OnLobbyCreated.Invoke();
     }
 
@@ -99,19 +100,20 @@ public class SteamLobby : MonoBehaviour
             Destroy(user);
             
         inLobby.Clear();
-        Debug.Log($"Lobby entered");
+        Debug.Log("Lobby entered");
         
         foreach (var member in currentLobby.Members)
         {
+            SteamFriends.RequestUserInformation(member.Id);
             var obj = Instantiate(InLobbyFriend, content);
-            obj.GetComponentInChildren<Text>().text = member.Name;
+            obj.GetComponentInChildren<TextMeshProUGUI>().text = member.Name;
             
             inLobby.Add(member.Id, obj);
         }
         OnLobbyJoined.Invoke();
     }
 
-    public async void CreateLobbyAsync(Lobby lobby)
+    public async void CreateLobbyAsync()
     {
         var result = await CreateLobby();
         if (!result)
@@ -123,7 +125,7 @@ public class SteamLobby : MonoBehaviour
     {
         try
         {
-            var createLobbyOutput = await SteamMatchmaking.CreateLobbyAsync();
+            var createLobbyOutput = await SteamMatchmaking.CreateLobbyAsync(4);
             if (!createLobbyOutput.HasValue)
             {
                 Debug.Log("Lobby creation failed.");
@@ -132,6 +134,7 @@ public class SteamLobby : MonoBehaviour
             currentLobby = createLobbyOutput.Value;
             currentLobby.SetFriendsOnly();
             currentLobby.SetJoinable(true);
+            isOwner = true;
             
             return true;
         }
