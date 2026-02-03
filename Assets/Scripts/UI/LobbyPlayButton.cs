@@ -14,4 +14,12 @@ public class LobbyPlayButton : MonoBehaviour
             playButton.SetActive(false);
         }
     }
+
+    public void OnClickStartGame()
+    {
+        if (SteamLobby.currentLobby.Owner.Id != SteamClient.SteamId)
+            return;
+
+        SteamLobby.currentLobby.SetData("startGame", "1");
+    }
 }

@@ -7,6 +7,7 @@ using Steamworks.Data;
 using UnityEngine.Events;
 using System.Threading.Tasks;
 using TMPro;
+using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
 public class SteamLobby : MonoBehaviour
@@ -34,6 +35,18 @@ public class SteamLobby : MonoBehaviour
         SteamMatchmaking.OnLobbyGameCreated +=  OnLobbyGameCreated;
         SteamFriends.OnGameLobbyJoinRequested += OnGameLobbyJoinRequest;
         SteamMatchmaking.OnLobbyInvite += OnLobbyInvite;
+        SteamMatchmaking.OnLobbyDataChanged += OnLobbyUpdated;
+    }
+
+    private void OnLobbyUpdated(Lobby lobby)
+    {
+        if (lobby.Id != currentLobby.Id)
+            return;
+
+        var current = currentLobby;
+        
+        if (current.GetData("startGame") == "1")
+            SceneManager.LoadScene("Main");
     }
 
     private void OnLobbyInvite(Friend friend, Lobby lobby)
@@ -43,7 +56,7 @@ public class SteamLobby : MonoBehaviour
     
     private void OnLobbyGameCreated(Lobby lobby, uint ip, ushort port, SteamId id)
     {
-        
+        //placeholder
     }
 
     private void OnLobbyMemberJoined(Lobby lobby, Friend friend)
