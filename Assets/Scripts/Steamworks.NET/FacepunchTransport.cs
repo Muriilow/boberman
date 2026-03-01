@@ -42,7 +42,8 @@ namespace Netcode.Transports.Facepunch
 
         private void Awake()
         {
-            StartCoroutine(InitSteamworks());
+            //StartCoroutine(InitSteamworks());
+            
         }
 
         private void Update()
@@ -245,12 +246,12 @@ namespace Netcode.Transports.Facepunch
         void ISocketManager.OnDisconnected(SocketConnection connection, ConnectionInfo info)
         {
             if (connectedClients.Remove(connection.Id))
-	    {
-	        InvokeOnTransportEvent(NetworkEvent.Disconnect, connection.Id, default, Time.realtimeSinceStartup);
+            {
+                InvokeOnTransportEvent(NetworkEvent.Disconnect, connection.Id, default, Time.realtimeSinceStartup);
 
-	       if (LogLevel <= LogLevel.Developer)
-                    Debug.Log($"[{nameof(FacepunchTransport)}] - Disconnected Steam user {info.Identity.SteamId}");
-	    }
+               if (LogLevel <= LogLevel.Developer)
+                        Debug.Log($"[{nameof(FacepunchTransport)}] - Disconnected Steam user {info.Identity.SteamId}");
+            }
      	    else if (LogLevel <= LogLevel.Normal)
                 Debug.LogWarning($"[{nameof(FacepunchTransport)}] - Failed to diconnect client with ID {connection.Id}, client not connected.");
         }

@@ -6,14 +6,16 @@ using Steamworks;
 using Steamworks.Data;
 using UnityEngine.Events;
 using System.Threading.Tasks;
+using Netcode.Transports.Facepunch;
 using TMPro;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
 public class SteamLobby : MonoBehaviour
 {
+    public static SteamLobby Instance { get; private set; } // Singleton Instance
     public static Lobby currentLobby;
-    private bool isOwner = false;
+    public bool isOwner = false; // Made public
     public UnityEvent OnLobbyCreated;
     public UnityEvent OnLobbyJoined;
     public UnityEvent OnLobbyLeave;
@@ -22,9 +24,18 @@ public class SteamLobby : MonoBehaviour
     public Transform content;
     
     public Dictionary<SteamId, GameObject> inLobby = new Dictionary<SteamId, GameObject>();
-    private void Start()
+    private void Awake() // Changed from Start() to Awake() for Singleton setup
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
         DontDestroyOnLoad(this);
+    }
+    private void Start() // Moved Steam event subscriptions here
+    {
         SteamFriends.RequestUserInformation(SteamClient.SteamId);
         SteamMatchmaking.OnLobbyCreated += OnLobbyCreatedCallback;
         SteamMatchmaking.OnLobbyEntered += OnLobbyEntered;
@@ -46,7 +57,13 @@ public class SteamLobby : MonoBehaviour
         var current = currentLobby;
         
         if (current.GetData("startGame") == "1")
-            SceneManager.LoadScene("Main");
+        {
+            if (SceneManager.GetActiveScene().name != "Main")
+            {
+                Debug.Log("Starting game: Loading Main scene.");
+                SceneManager.LoadScene("Main");
+            }
+        }
     }
 
     private void OnLobbyInvite(Friend friend, Lobby lobby)
@@ -148,7 +165,8 @@ public class SteamLobby : MonoBehaviour
             currentLobby.SetFriendsOnly();
             currentLobby.SetJoinable(true);
             isOwner = true;
-            
+           
+            Debug.Log("Created the lobby");
             return true;
         }
         catch (Exception e)

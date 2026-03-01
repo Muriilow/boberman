@@ -63,7 +63,8 @@ public class ManageDrops : NetworkBehaviour
     {
         if (!IsServer)
             return;
-
+        Debug.Log(_wallsParent.name); 
+        
         for (var i = 0; i < _size.x - 1; i++)
             for (var j = 0; j < _size.y; j++)
             {
@@ -74,13 +75,11 @@ public class ManageDrops : NetworkBehaviour
 
                 if (CanCreateWall(i, j, pos, wallChances))
                 {
-                    _wall = Instantiate(_wall, pos, Quaternion.identity);
-                    UpdateGridWall(true, _wall.gameObject, i, j);
+                    Transform wallInstance = Instantiate(_wall, pos, Quaternion.identity);
+                    wallInstance.name = "wall";
+                    UpdateGridWall(true, wallInstance.gameObject, i, j);
                     _walls.gridArray[i, j].Item = GetPowerUp(powerUpChances);
-                    _wall.GetComponent<NetworkObject>().Spawn(true);
-
-                    _wall.name = "wall";
-                    _wall.SetParent(_wallsParent);
+                    wallInstance.GetComponent<NetworkObject>().Spawn(true);
                 }
 
                 _hasWall[i, j] = DebugGrid.CreateWorldText(_hasWallParent,
