@@ -1,4 +1,5 @@
 using Netcode.Transports.Facepunch;
+using Steamworks;
 using UnityEngine;
 using Unity.Netcode;
 public class ManageRounds : NetworkBehaviour
@@ -29,9 +30,9 @@ public class ManageRounds : NetworkBehaviour
             return;
         }
 
-        if (SteamLobby.Instance != null)
+        if (SteamLobby.Instance != null && SteamLobby.currentLobby.Id.Value != 0)
         {
-            if (SteamLobby.Instance.isOwner)
+            if (SteamLobby.currentLobby.Owner.Id == SteamClient.SteamId)
             {
                 _alreadyInitialised = true;
                 NetworkManager.Singleton.StartHost();
@@ -43,6 +44,7 @@ public class ManageRounds : NetworkBehaviour
                 if (transport != null)
                 {
                     transport.targetSteamId = SteamLobby.currentLobby.Owner.Id;
+                    Debug.Log($"Targeting Steam Host ID: {transport.targetSteamId}");
                 }
                 _alreadyInitialised = true;
                 NetworkManager.Singleton.StartClient();
@@ -51,7 +53,7 @@ public class ManageRounds : NetworkBehaviour
         }
         else
         {
-            Debug.LogWarning("SteamLobby instance is null. Defaulting to StartHost for local testing.");
+            Debug.LogWarning("No active Steam Lobby. Defaulting to StartHost for local testing.");
             _alreadyInitialised = true;
             NetworkManager.Singleton.StartHost();
         }
@@ -59,8 +61,7 @@ public class ManageRounds : NetworkBehaviour
 
     private void OnDestroy()
     {
-        // Don't reset _alreadyInitialised here to avoid race conditions with multiple starts.
-        // It will reset on app restart or manual reset if needed.
+        // Don't reset static flag here to avoid race conditions with multiple objects
     }
 
     public override void OnNetworkSpawn()

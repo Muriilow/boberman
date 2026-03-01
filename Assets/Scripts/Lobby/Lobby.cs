@@ -126,6 +126,8 @@ public class SteamLobby : MonoBehaviour
 
     private void OnLobbyEntered(Lobby lobby)
     {
+        currentLobby = lobby;
+        
         foreach (var user in inLobby.Values)
             Destroy(user);
             

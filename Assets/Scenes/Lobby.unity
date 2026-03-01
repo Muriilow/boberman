@@ -1078,7 +1078,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 684790638}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.99999344
+  m_Size: 0.99999887
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -1362,7 +1362,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.03848759, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -14.026929, y: 0.0005178613}
+  m_AnchoredPosition: {x: -14.026929, y: 0.00011432511}
   m_SizeDelta: {x: 14, y: 100}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &848286796
@@ -1948,7 +1948,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1442077921}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c18ba802a5ddf6e89880b0bf023bb1e6, type: 3}
   m_Name: 
@@ -1971,7 +1971,7 @@ MonoBehaviour:
   NetworkManagerExpanded: 0
   NetworkConfig:
     ProtocolVersion: 0
-    NetworkTransport: {fileID: 1442077925}
+    NetworkTransport: {fileID: 1442077922}
     PlayerPrefab: {fileID: 8998316997674671113, guid: 0ef0d8ace931cff45923bd44a49e5175, type: 3}
     Prefabs:
       NetworkPrefabsLists:
@@ -2021,7 +2021,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1442077921}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6960e84d07fb87f47956e7a81d71c4e6, type: 3}
   m_Name: 
