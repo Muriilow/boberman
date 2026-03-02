@@ -20,6 +20,15 @@ public class PlayerDieState : PlayerState
         
         playerMovement.moveSpeed = 0;
         player.AnimationTriggerEvent("PlayerDying");
+
+        // Notify the server that this player is out
+        if (player.IsOwner)
+        {
+            if (ManageRounds.Instance != null)
+            {
+                ManageRounds.Instance.PlayerDiedServerRpc();
+            }
+        }
     }
 
     public override void ExitState()

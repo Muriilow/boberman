@@ -1,11 +1,28 @@
+using System;
+using System.Collections.Generic;
 using Netcode.Transports.Facepunch;
 using Steamworks;
 using UnityEngine;
 using Unity.Netcode;
 public class ManageRounds : NetworkBehaviour
 {
-    private static bool _alreadyInitialised = false;
+    private HashSet<ulong> _playersAliveIds = new HashSet<ulong>();
     
+    private static bool _alreadyInitialised = false;
+    public static ManageRounds Instance { get; private set; }
+    public event Action OnGameOver;
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
+    
+    #region Starting the Game 
     private void Start()
     {
         Debug.Log($"[ManageRounds] Start called on {gameObject.name} (Instance ID: {gameObject.GetInstanceID()})");
@@ -59,17 +76,84 @@ public class ManageRounds : NetworkBehaviour
         }
     }
 
-    private void OnDestroy()
-    {
-        // Don't reset static flag here to avoid race conditions with multiple objects
-    }
-
     public override void OnNetworkSpawn()
     {
+        if (IsServer)
+        {
+            _playersAliveIds.Clear();
+            foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
+                _playersAliveIds.Add(client.ClientId);
+            
+            NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+        }
+
         if (!IsHost)
             return;
         
+        Debug.Log($"Starting game. Numbers of players active: {_playersAliveIds.Count}");
         ManageDrops.Instance.CreateTiles();
         ManageDrops.Instance.CreateWalls();
     }
+
+    private void OnClientConnected(ulong clientId)
+    {
+        if(_playersAliveIds.Add(clientId))
+            Debug.Log($"Player {clientId} connected. Total alive: {_playersAliveIds.Count}");
+    }
+
+    private void OnClientDisconnected(ulong clientId)
+    {
+        if (_playersAliveIds.Add(clientId))
+        {
+            Debug.Log($"Player {clientId} disconnected. Total alive: {_playersAliveIds.Count}");
+            CheckWinCondition();
+        }
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        if (IsServer && NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
+        }
+    }
+    #endregion 
+    
+    #region GameplayLoop 
+
+    [Rpc(SendTo.Server)]
+    public void PlayerDiedServerRpc(RpcParams rpcParams = default)
+    {
+        ulong clientId = rpcParams.Receive.SenderClientId;
+        if (_playersAliveIds.Remove(clientId))
+        {
+            Debug.Log($"Player reported death. Total alive: {_playersAliveIds.Count}");
+            CheckWinCondition();
+        }
+    }
+
+    private void CheckWinCondition()
+    {
+        if (!IsServer) return;
+
+        if (_playersAliveIds.Count <= 1)
+        {
+            Debug.Log("Game Over detected by server. Returning to Lobby.");
+            EndGameClientRpc();
+        }
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    private void EndGameClientRpc()
+    {
+        if (!IsServer) 
+            return;
+        OnGameOver?.Invoke();
+        // Reseta para a próxima partida
+        _alreadyInitialised = false;
+        //NetworkManager.SceneManager.LoadScene("Lobby", UnityEngine.SceneManagement.LoadSceneMode.Single);
+    }
+    #endregion
 }

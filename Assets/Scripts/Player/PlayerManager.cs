@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -25,7 +26,8 @@ public class PlayerManager : NetworkBehaviour, IDamageable
 
     public bool IsWalking { get; private set; }
     public bool IsAttacking { get; set; }
-
+    public bool IsActive { get; private set; }
+    
     public string CurrentState { get; private set; }
 
     private void Awake()
@@ -55,7 +57,23 @@ public class PlayerManager : NetworkBehaviour, IDamageable
             RequestRespawnPlayerServerRpc();
         
         _stateMachine.Initialize(IdleState);
+        
+        ManageRounds.Instance.OnGameOver += StopLogic;
+        IsActive = true;
+        
         base.OnNetworkSpawn();
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        ManageRounds.Instance.OnGameOver -= StopLogic;
+        base.OnNetworkDespawn();
+    }
+
+    private void StopLogic()
+    {
+        IsActive = false;
+        Debug.Log("Player stopped his logic");
     }
 
     [Rpc(SendTo.Server)]
@@ -125,6 +143,9 @@ public class PlayerManager : NetworkBehaviour, IDamageable
     #region Damageable
     public void Damage(float damageAmount)
     {
+        if (CurrentHealth <= 0f)
+            return;
+
         CurrentHealth -= damageAmount;
         if (CurrentHealth <= 0f)
             _stateMachine.ChangeState(DieState);

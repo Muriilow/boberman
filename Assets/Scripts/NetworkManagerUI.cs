@@ -16,7 +16,6 @@ public class NetworkManagerUI : NetworkBehaviour
     [SerializeField] private ManageDrops ManageDrops;
     private void Awake()
     {
-        if(serverButton)
         serverButton.onClick.AddListener(() =>
         {
             NetworkManager.Singleton.StartServer();
