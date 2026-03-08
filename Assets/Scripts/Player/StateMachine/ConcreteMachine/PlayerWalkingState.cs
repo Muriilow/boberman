@@ -6,8 +6,10 @@ using UnityEngine.InputSystem;
 
 public class PlayerWalkingState : PlayerState
 {
+    private PlayerManager player;
     public PlayerWalkingState(PlayerManager player, PlayerMovement playerMovement, PlayerInputSystem playerInput, StateMachine<PlayerState> playerStateMachine, Animator playerAnimator) : base(player, playerMovement, playerInput, playerStateMachine, playerAnimator)
     {
+        this.player = player;
     }
 
     public override void AnimationTriggerEvent(string triggerType)
@@ -26,10 +28,9 @@ public class PlayerWalkingState : PlayerState
 
     public override void FrameUpdate()
     {
-
         if (!player.IsWalking)
             playerStateMachine.ChangeState(player.IdleState);
-
+        
         playerMovement.direction = playerMovement.playerInput.direction;
 
         bool inputUp = playerInput.direction.x == 0 && playerInput.direction.y == 1;

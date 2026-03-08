@@ -11,6 +11,8 @@ public class ManageRounds : NetworkBehaviour
     private static bool _alreadyInitialised = false;
     public static ManageRounds Instance { get; private set; }
     public event Action OnGameOver;
+    public int Round { get; private set; }
+    public int MaxRounds { get; private set; }
 
     private void Awake()
     {
@@ -20,6 +22,9 @@ public class ManageRounds : NetworkBehaviour
             return;
         }
         Instance = this;
+        Round = 1;
+        MaxRounds = 3;
+        DontDestroyOnLoad(gameObject);
     }
     
     #region Starting the Game 
@@ -153,6 +158,7 @@ public class ManageRounds : NetworkBehaviour
         OnGameOver?.Invoke();
         // Reseta para a próxima partida
         _alreadyInitialised = false;
+        Round++;
         //NetworkManager.SceneManager.LoadScene("Lobby", UnityEngine.SceneManagement.LoadSceneMode.Single);
     }
     #endregion

@@ -26,7 +26,6 @@ public class PlayerManager : NetworkBehaviour, IDamageable
 
     public bool IsWalking { get; private set; }
     public bool IsAttacking { get; set; }
-    public bool IsActive { get; private set; }
     
     public string CurrentState { get; private set; }
 
@@ -59,7 +58,7 @@ public class PlayerManager : NetworkBehaviour, IDamageable
         _stateMachine.Initialize(IdleState);
         
         ManageRounds.Instance.OnGameOver += StopLogic;
-        IsActive = true;
+        _playerInput.enabled = true;
         
         base.OnNetworkSpawn();
     }
@@ -72,8 +71,14 @@ public class PlayerManager : NetworkBehaviour, IDamageable
 
     private void StopLogic()
     {
-        IsActive = false;
         Debug.Log("Player stopped his logic");
+        
+        // Disable input and stop existing movement
+        _playerInput.enabled = false;
+        _playerInput.direction = Vector2.zero;
+        SetWalking(false);
+        
+        _stateMachine.ChangeState(IdleState);
     }
 
     [Rpc(SendTo.Server)]
@@ -143,6 +148,9 @@ public class PlayerManager : NetworkBehaviour, IDamageable
     #region Damageable
     public void Damage(float damageAmount)
     {
+        if (!IsOwner)
+            return;
+
         if (CurrentHealth <= 0f)
             return;
 
