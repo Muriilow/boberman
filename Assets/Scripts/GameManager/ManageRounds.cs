@@ -1,9 +1,12 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Netcode.Transports.Facepunch;
 using Steamworks;
 using UnityEngine;
 using Unity.Netcode;
+using UnityEngine.SceneManagement;
+
 public class ManageRounds : NetworkBehaviour
 {
     private HashSet<ulong> _playersAliveIds = new HashSet<ulong>();
@@ -13,6 +16,7 @@ public class ManageRounds : NetworkBehaviour
     public event Action OnGameOver;
     public int Round { get; private set; }
     public int MaxRounds { get; private set; }
+    [SerializeField] private GameObject _playerPrefab;
 
     private void Awake()
     {
@@ -44,6 +48,7 @@ public class ManageRounds : NetworkBehaviour
             Debug.LogError("NetworkManager.Singleton is null!");
             return;
         }
+        
 
         if (NetworkManager.Singleton.IsListening)
         {
@@ -83,22 +88,55 @@ public class ManageRounds : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        if (IsServer)
-        {
-            _playersAliveIds.Clear();
-            foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
-                _playersAliveIds.Add(client.ClientId);
-            
-            NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
-            NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
-        }
-
+        base.OnNetworkSpawn();
         if (!IsHost)
             return;
         
+        _playersAliveIds.Clear();
+        foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
+            _playersAliveIds.Add(client.ClientId);
+        
+        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+        NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+        NetworkManager.Singleton.SceneManager.OnLoadEventCompleted += OnSceneLoaded;
+
+        
         Debug.Log($"Starting game. Numbers of players active: {_playersAliveIds.Count}");
+        ManageDrops.Instance.CreateInfo();
         ManageDrops.Instance.CreateTiles();
         ManageDrops.Instance.CreateWalls();
+    }
+
+    private void OnSceneLoaded(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
+    {
+        if (sceneName != "Main" || !IsServer)
+            return;
+
+        Debug.Log("Main scene loaded. Initializing players and map for the round.");
+        
+        _alreadyInitialised = true;
+        _playersAliveIds.Clear();
+        
+        foreach(var clientId in clientsCompleted)
+        {
+            _playersAliveIds.Add(clientId);
+
+            if (NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out var client))
+            {
+                // If the player object already exists, we don't spawn a new one.
+                // This prevents the "double player" issue.
+                if (client.PlayerObject == null)
+                {
+                    Debug.Log($"Spawning player object for client {clientId}");
+                    var playerSpawn = Instantiate(_playerPrefab);
+                    playerSpawn.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);
+                }
+                else
+                {
+                    Debug.Log($"Player object already exists for client {clientId}. Skipping manual spawn.");
+                }
+            }
+        }
     }
 
     private void OnClientConnected(ulong clientId)
@@ -122,6 +160,7 @@ public class ManageRounds : NetworkBehaviour
         {
             NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
             NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
+            NetworkManager.Singleton.SceneManager.OnLoadEventCompleted -= OnSceneLoaded;
         }
     }
     #endregion 
@@ -135,17 +174,19 @@ public class ManageRounds : NetworkBehaviour
         if (_playersAliveIds.Remove(clientId))
         {
             Debug.Log($"Player reported death. Total alive: {_playersAliveIds.Count}");
-            CheckWinCondition();
+            StartCoroutine(CheckWinCondition());
         }
     }
 
-    private void CheckWinCondition()
+    private IEnumerator CheckWinCondition()
     {
-        if (!IsServer) return;
+        if (!IsServer) yield break;
 
         if (_playersAliveIds.Count <= 1)
         {
             Debug.Log("Game Over detected by server. Returning to Lobby.");
+            yield return new WaitForSeconds(5f);
+
             EndGameClientRpc();
         }
     }
@@ -155,11 +196,17 @@ public class ManageRounds : NetworkBehaviour
     {
         if (!IsServer) 
             return;
+
         OnGameOver?.Invoke();
+                
         // Reseta para a próxima partida
         _alreadyInitialised = false;
-        Round++;
-        //NetworkManager.SceneManager.LoadScene("Lobby", UnityEngine.SceneManagement.LoadSceneMode.Single);
+        _playersAliveIds.Clear();
+
+        if(Round <= MaxRounds){
+            Round++;
+            NetworkManager.SceneManager.LoadScene("Main", LoadSceneMode.Single);
+        }
     }
     #endregion
 }

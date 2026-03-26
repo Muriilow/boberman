@@ -6,7 +6,6 @@ using Utilities;
 
 public class ManageDrops : NetworkBehaviour
 {
-    [SerializeField] private Transform _wallsParent;
      public static ManageDrops Instance {get; private set;}
      
     [Header("Tilemaps")]
@@ -19,7 +18,7 @@ public class ManageDrops : NetworkBehaviour
 
     [Header("Grid")]
     private Grid<BackgroundTile> _walls;
-    private NetworkVariable<GridStruct> _bombs; 
+    private GridStruct _bombs; 
     [SerializeField] private Vector3Int _size;
     public Vector3Int origin;
 
@@ -29,41 +28,32 @@ public class ManageDrops : NetworkBehaviour
     [Range(0f, 1f)]
     [SerializeField] private float _powerUpPercentage;
 
-    [Header("Debug")]
-    [SerializeField] private Transform _isUsableParent;
-    [SerializeField] private Transform _hasWallParent;
-    [SerializeField] private Transform _hasBombParent;
-    private TextMesh[,] _hasWall;
-    private TextMesh[,] _hasBomb;
-
     [Header("Items")]
     [SerializeField] private Speed _speedPw;
     [SerializeField] private Blast _blastPw;
     [SerializeField] private Bomb _bombPw;
+    
     private void Awake()
     {
         Instance = this;
-
-        _size = _tileMap.size;
-
-        //Maybe revert this to a normal grid class?
-        _bombs = new NetworkVariable<GridStruct>(new GridStruct(_size.x, _size.y)); 
-
-        _walls = new Grid<BackgroundTile>(_size.x, _size.y);
-
-        _hasWall = new TextMesh[_size.x, _size.y];
-        _hasBomb = new TextMesh[_size.x, _size.y];
-
-        origin = _tileMap.origin;
     }
-
-
+    
+    public void CreateInfo()
+    {
+        //Maybe revert this to a normal grid class?
+        _tileMap = GameObject.FindWithTag("Grid").GetComponentInChildren<Tilemap>();
+        _size = _tileMap.size;
+        origin = _tileMap.origin;
+        
+        _bombs = new GridStruct(_size.x, _size.y); 
+        _walls = new Grid<BackgroundTile>(_size.x, _size.y);
+    }
+    
     #region Walls
     public void CreateWalls()
     {
         if (!IsServer)
             return;
-        Debug.Log(_wallsParent.name); 
         
         for (var i = 0; i < _size.x - 1; i++)
             for (var j = 0; j < _size.y; j++)
@@ -81,20 +71,6 @@ public class ManageDrops : NetworkBehaviour
                     _walls.gridArray[i, j].Item = GetPowerUp(powerUpChances);
                     wallInstance.GetComponent<NetworkObject>().Spawn(true);
                 }
-
-                _hasWall[i, j] = DebugGrid.CreateWorldText(_hasWallParent,
-                                                            CanCreateWall(i, j, pos, wallChances) ? "1" : "0",
-                                                            pos,
-                                                            10,
-                                                            Color.white,
-                                                            TextAnchor.MiddleCenter);
-                
-                _hasBomb[i, j] = DebugGrid.CreateWorldText(_hasBombParent,
-                                                        "0",
-                                                        pos,
-                                                        10,
-                                                        Color.white,
-                                                        TextAnchor.MiddleCenter);
             }
     }
 
@@ -113,8 +89,6 @@ public class ManageDrops : NetworkBehaviour
         wall.GetComponent<Animator>().SetBool("Destroy", true);
 
         UpdateGridWall(false, null, x, y);
-
-        UpdateTextWall(false, x, y);
 
         if (item == null)
             return;
@@ -157,14 +131,7 @@ public class ManageDrops : NetworkBehaviour
             {
                 var pos = new Vector3Int(i + origin.x, j + origin.y, origin.z);
                 _walls.gridArray[i, j] = new BackgroundTile(UsableTile(pos), false, null, null, pos.x, pos.y);
-                _bombs.Value.gridArray[i, j] = new BackgroundBomb(UsableTile(pos), false, pos.x, pos.y);
-
-                DebugGrid.CreateWorldText(_isUsableParent,
-                                            UsableTile(pos) ? "1" : "0",
-                                            pos,
-                                            10,
-                                            Color.white,
-                                            TextAnchor.MiddleCenter);
+                _bombs.gridArray[i, j] = new BackgroundBomb(UsableTile(pos), false, pos.x, pos.y);
             }
     }
 
@@ -187,17 +154,10 @@ public class ManageDrops : NetworkBehaviour
     }
     #endregion
 
-    #region UpdateDebug
-    public void UpdateTextBomb(bool hasPlace, int x, int y) => _hasBomb[x, y].text = hasPlace ? "1" : "0";
-
-    private void UpdateTextWall(bool hasPlace, int x, int y) => _hasWall[x, y].text = hasPlace ? "1" : "0";
-
-    #endregion
-
     #region UpdateGrid
     public void UpdateGridBomb(bool hasBomb, int x, int y)
     {
-        _bombs.Value.gridArray[x, y].hasBomb = hasBomb;
+        _bombs.gridArray[x, y].hasBomb = hasBomb;
     }
 
     private void UpdateGridWall(bool hasWall, GameObject wall, int x, int y)
@@ -208,7 +168,7 @@ public class ManageDrops : NetworkBehaviour
     #endregion
 
     #region BooleanChecks
-    public bool CheckBombs(int x, int y) => _bombs.Value.gridArray[x, y].hasBomb;
+    public bool CheckBombs(int x, int y) => _bombs.gridArray[x, y].hasBomb;
     public bool CheckForUsableTiles(int x, int y) => !_walls.gridArray[x, y].IsUsable;
     public bool CheckForWalls(int x, int y) => _walls.gridArray[x, y].HasWall;
     private bool CanCreateWall(int i, int j, Vector3Int pos, float chance) => _walls.gridArray[i, j].IsUsable

@@ -84,7 +84,6 @@ public class BombControl : NetworkBehaviour
         var (x, y) = Utilities.Convert.PositionToGrid(transform.position, _manageDrops.origin);
 
         _manageDrops.UpdateGridBomb(false, x, y);
-        _manageDrops.UpdateTextBomb(false, x, y);
 
         _playerBomb.GetBombServerRpc();
         GetComponent<NetworkObject>().Despawn();

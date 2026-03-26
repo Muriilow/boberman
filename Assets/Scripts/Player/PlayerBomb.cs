@@ -65,7 +65,6 @@ public class PlayerBomb : NetworkBehaviour
         _bombsRemaining.Value--;
 
         _manageDrops.UpdateGridBomb(true, x, y);
-        _manageDrops.UpdateTextBomb(true, x, y);
     }
 
     #endregion
