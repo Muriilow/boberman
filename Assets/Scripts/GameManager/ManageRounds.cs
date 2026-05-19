@@ -203,10 +203,13 @@ public class ManageRounds : NetworkBehaviour
         _alreadyInitialised = false;
         _playersAliveIds.Clear();
 
-        if(Round <= MaxRounds){
+        if(Round <= MaxRounds)
+        {
             Round++;
             NetworkManager.SceneManager.LoadScene("Main", LoadSceneMode.Single);
         }
+        else
+            NetworkManager.SceneManager.LoadScene("Lobby", LoadSceneMode.Single);
     }
     #endregion
 }

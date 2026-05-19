@@ -74,30 +74,30 @@ public struct BackgroundBomb : INetworkSerializable, System.IEquatable<Backgroun
 
 public struct GridStruct : INetworkSerializable
 {
-    public int width;
-    public int height;
+    private int _width;
+    private int _height;
 
     public BackgroundBomb[,] gridArray;
 
     public GridStruct(int width, int height)
     {
-        this.width = width;
-        this.height = height;
+        _width = width; 
+        _height = height;
         gridArray = new BackgroundBomb[width, height];
     }
 
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
-        serializer.SerializeValue(ref width);
-        serializer.SerializeValue(ref height);
+        serializer.SerializeValue(ref _width);
+        serializer.SerializeValue(ref _height);
 
         if (serializer.IsReader)
         {
-            gridArray = new BackgroundBomb[width, height];
+            gridArray = new BackgroundBomb[_width, _height];
         }
-        for (int i = 0; i < width; i++)
+        for (int i = 0; i < _width; i++)
         {
-            for (int j = 0; j < height; j++)
+            for (int j = 0; j < _height; j++)
             { 
                 // Serialize each item in the array
                 serializer.SerializeValue(ref gridArray[i, j]);
