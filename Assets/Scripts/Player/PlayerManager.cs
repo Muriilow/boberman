@@ -24,7 +24,7 @@ public abstract class PlayerManager : NetworkBehaviour, IDamageable
     public float MaxHealth { get; set; }
     public float CurrentHealth { get; set; }
 
-    public bool IsWalking { get; protected set; }
+    public bool IsWalking { get; set; }
     public bool IsAttacking { get; set; }
     
     public string CurrentState { get; protected set; }
@@ -76,7 +76,7 @@ public abstract class PlayerManager : NetworkBehaviour, IDamageable
         // Disable input and stop existing movement
         PlayerInput.enabled = false;
         PlayerInput.direction = Vector2.zero;
-        SetWalking(false);
+        IsWalking = false;
         
         StateMachine.ChangeState(IdleState);
     }
@@ -138,13 +138,6 @@ public abstract class PlayerManager : NetworkBehaviour, IDamageable
         transform.position = spawnPoint;
     }
 
-    #region Triggers
-    public void SetWalking(bool isWalking)
-    {
-        IsWalking = isWalking;
-    }
-
-    #endregion
     #region Damageable
     public virtual void Damage(float damageAmount)
     {

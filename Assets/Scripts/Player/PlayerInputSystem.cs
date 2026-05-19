@@ -16,7 +16,7 @@ public class PlayerInputSystem: MonoBehaviour
     private void Update()
     {
         direction = moveAction.action.ReadValue<Vector2>();
-        _playerManager.SetWalking(direction.normalized != Vector2.zero);
+        _playerManager.IsWalking = direction.normalized != Vector2.zero;
     }
 
 }
